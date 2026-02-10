@@ -157,12 +157,13 @@ from t4
 select 
 PartnerCode,
 product_name, MON,
+sum(netpr) as Net_Pr,
 sum(Accrual_Net_Ins * policy_booked_flag) as Accrual_Net,
 sum(case when compliance_flag=1 then Accrual_Net_Ins * policy_booked_flag else 0 end) as Accrual_Net_C,
---sum(case when compliance_flag=0 then Accrual_Net_Ins * policy_booked_flag else 0 end) as Accrual_Net_NC,
 sum(motor_booked_flag) as motor_booked,
 sum(motor_cancelled_flag) as motor_cancelled
 from t5
 group by 
 PartnerCode,
 product_name, MON
+
