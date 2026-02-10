@@ -166,12 +166,3 @@ from t5
 group by 
 PartnerCode,
 product_name, MON
---having sum(Accrual_Net_Ins * policy_booked_flag) >0
-
-
-
-
-
-
-
-
