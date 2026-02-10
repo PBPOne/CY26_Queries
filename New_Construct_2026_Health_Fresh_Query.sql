@@ -154,15 +154,8 @@ select
 PartnerCode,
 pd as product_name, MON,
 sum(Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag) as Accrual_Net,
-sum(case when compliance_flag=1 then 
-Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag else 0 end) as Accrual_Net_C
+sum(case when compliance_flag=1 then Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag else 0 end) as Accrual_Net_C
 from t5
 group by 
 PartnerCode,
 pd, MON
-
-
-
-
-
-
