@@ -160,7 +160,7 @@ product_name, MON,
 sum(TotalPremium) as TotalPremium,
 sum(APE) as APE,
 sum(netpr) as Net_Pr,
-sum(Accrual_Net_Ins * special_deal_flag) as Accrual_Net_Booked,
+--sum(Accrual_Net_Ins * special_deal_flag) as Accrual_Net_Booked,
 sum(Accrual_Net_Ins * policy_booked_flag * special_deal_flag) as Accrual_Net,
 sum(case when compliance_flag=1 then (Accrual_Net_Ins * policy_booked_flag * special_deal_flag) else 0 end) as Accrual_Net_C,
 sum(motor_booked_flag) as motor_booked,
@@ -169,6 +169,7 @@ from t5
 group by 
 PartnerCode,
 product_name, MON
+
 
 
 
