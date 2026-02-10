@@ -102,17 +102,9 @@ inner join p1 on t1.Utm_term = p1.PartnerCode
 t3 as
 (
 select  t2.*, BasicPremium as netpr,
-      
---1  as policy_booked_flag,
-
-case when Status in ('Policy Issued', 'Sale Complete','Soft Copy Received') then 1
-	else 0 end as policy_issued_flag,
-
-case when MatrixLeadId is null then 1 else 0 end as special_deal_flag, ---0 means special deal
-
---1  as policy_verified_flag,  --tentative
-
-	
+      case when Status in ('Policy Issued', 'Sale Complete','Soft Copy Received') then 1
+	  else 0 end as policy_issued_flag,
+	  case when MatrixLeadId is null then 1 else 0 end as special_deal_flag, ---0 means special deal
 
 case when [Insurer Name] in ('LIC India') or [Insurer Name] like 'SBI%' then 'PSU'
 	when 
@@ -125,11 +117,10 @@ case when [Insurer Name] in ('LIC India') or [Insurer Name] like 'SBI%' then 'PS
 	else 'Others_pvt' end as life_insurers
 from t2
 ),
+	
 t4 as
 (
 select *,
-
---Life
 case when  PaymentPeriodicity in ('Single','Single pay','Single Premium')  then 0
 	 when  PayoutProdCat = 'ULIP' then 0
 	 when PayTerm in (2,3,4) then netpr*.5
@@ -154,17 +145,8 @@ select
 PartnerCode,
 product_name, MON,
 sum(Accrual_Net_Ins * policy_issued_flag * special_deal_flag) as Accrual_Net,
-sum(case when compliance_flag=1 then 
-Accrual_Net_Ins * policy_issued_flag * special_deal_flag else 0 end) as Accrual_Net_C
+sum(case when compliance_flag=1 then (Accrual_Net_Ins * policy_issued_flag * special_deal_flag) else 0 end) as Accrual_Net_C
 from t5
 group by 
 PartnerCode,
 product_name, MON
-
-
-
-
-
-
-
-
