@@ -121,36 +121,18 @@ from t2
 ),
 t4 as
 (
-select *
-	 
-from t3
-),
-
-t5 as
-(
 select *,
 case when health_insurers in ('PSU') then 0 else netpr end as 'Accrual_Net_Ins',
 case when ComplianceCertified = 'Yes' and IsComplianceN = 'Yes' then 1 else 0 end as compliance_flag,
 'Health_Renewal' as pd
-from t4
+from t3
 )
-select --top 5   
+select  
 PartnerCode,
 pd as product_name, MON,
 sum(Accrual_Net_Ins * policy_issued_flag * special_deal_flag) as Accrual_Net,
-sum(case when compliance_flag=1 then Accrual_Net_Ins * policy_issued_flag * special_deal_flag else 0 end) as Accrual_Net_C
-from t5
+sum(case when compliance_flag=1 then (Accrual_Net_Ins * policy_issued_flag * special_deal_flag) else 0 end) as Accrual_Net_C
+from t4
 group by 
 PartnerCode,
 pd, MON
-
-
-
-
-
-
-
-
-
-
-
