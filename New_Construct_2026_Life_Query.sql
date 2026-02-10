@@ -144,6 +144,8 @@ from t4
 select
 PartnerCode,
 product_name, MON,
+sum(TotalPremium) as TotalPremium,
+sum(APE) as APE,
 sum(netpr) as Net_Pr,
 sum(Accrual_Net_Ins * special_deal_flag) as Accrual_Net_Booked,
 sum(Accrual_Net_Ins * policy_issued_flag * special_deal_flag) as Accrual_Net,
@@ -152,4 +154,5 @@ from t5
 group by 
 PartnerCode,
 product_name, MON
+
 
