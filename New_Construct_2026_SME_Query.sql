@@ -101,24 +101,16 @@ from t3
 
 t5 as
 (
-select *, Accrual_Net_Pr as 'Accrual_Net_Ins',
+select *, Accrual_Net_Pr * special_deal_flag as 'Accrual_Net_Ins',
 case when ComplianceCertified = 'Yes' and IsComplianceN = 'Yes' then 1 else 0 end as compliance_flag
 from t4
 )
 select
 PartnerCode,
 product_name, MON,
-sum(Accrual_Net_Ins * special_deal_flag) as Accrual_Net,
-sum(case when compliance_flag = 1 then Accrual_Net_Ins * special_deal_flag else 0 end) as Accrual_Net_C
+sum(Accrual_Net_Ins) as Accrual_Net,
+sum(case when compliance_flag = 1 then Accrual_Net_Ins else 0 end) as Accrual_Net_C
 from t5
 group by 
 PartnerCode,
 product_name, MON
-
-
-
-
-
-
-
-
