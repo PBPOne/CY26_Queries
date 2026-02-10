@@ -9,8 +9,6 @@ spl_deals as
 		where 
 			t.ContestMonth >= d.min_date
 ),
-
-
 all_bookings as --vw
 (
 select 
@@ -78,19 +76,14 @@ inner join p1 on t1.Utm_term = p1.PartnerCode
 ),
 t3 as
 (
-select  t2.*, [Net Premium] as netpr,
+select  t2.*, 
+[Net Premium] as netpr,
 case when MatrixLeadId is null then 1 else 0 end as special_deal_flag
-
-	 --1 as policy_booked_flag,
-	 --1 as policy_issued_flag,
-	 --1 as policy_verified_flag 
 from t2
 ),
 t4 as
 (
 select *,
-
---SME
 case when PlanName = 'Group Gratuity Plan' then netpr*.1
 	 when PlanName not in ('Group Gratuity Plan') and PlanName like '%Group%' then netpr*.25
 	 when PlanName not in ('Group Gratuity Plan') and PlanName not like '%Group%' then netpr*1.25
@@ -115,4 +108,5 @@ from t5
 group by 
 PartnerCode,
 product_name, MON
+
 
