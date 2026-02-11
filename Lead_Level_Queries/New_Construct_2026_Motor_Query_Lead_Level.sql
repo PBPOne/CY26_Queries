@@ -21,7 +21,7 @@ select
 	vw.[Insurer Name],vw.BookingMode,vw.BookingDate,
 	DATEFROMPARTS(YEAR(vw.BookingDate), MONTH(vw.BookingDate), 1) as MON,
 	vw.BusinessType, vw.SubProduct,vw.VehicleSubClass,
-	vw.ODPremium,vw.TPPremium,vw.ODTerm,vw.TPTerm,vw.Status,cast(vw.PolicyStartDate as date) as PolicyStartDate,vw.StatusId,
+	vw.ODPremium,vw.TPPremium,vw.ODTerm,vw.TPTerm,vw.Status,vw.StatusId,
 	'Motor' as product_name,
 	case 
 		when vw.ProductId in (186) and vw.SubProduct = 'Taxi' then 188 
@@ -161,6 +161,7 @@ motor_booked_flag,motor_cancelled_flag,policy_booked_flag,special_deal_flag,Accr
 Accrual_Net_Ins * policy_booked_flag * special_deal_flag as Accrual_Net,
 Accrual_Net_Ins * policy_booked_flag * special_deal_flag * compliance_flag as Accrual_Net_C
 from t5
+
 
 
 
