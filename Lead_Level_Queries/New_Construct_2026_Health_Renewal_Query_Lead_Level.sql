@@ -122,13 +122,13 @@ from t2
 t4 as
 (
 select *,
-case when Product_updated in (3,118,130,189,147,224) then netpr*1.25
-	 when Product_updated in (190) and Health_bt in ('New') and SumInsured >= 1000000 then netpr*1.25
-	 when Product_updated in (190) and Health_bt in ('New') and SumInsured >= 500000 and SumInsured < 1000000 then netpr*.75
+case --when Product_updated in (3,118,130,189,147,224) then netpr*1.25
+	 --when Product_updated in (190) and Health_bt in ('New') and SumInsured >= 1000000 then netpr*1.25
+	 --when Product_updated in (190) and Health_bt in ('New') and SumInsured >= 500000 and SumInsured < 1000000 then netpr*.75
 	 when Product_updated in (190) and SumInsured < 500000  then netpr*0
-	 when Product_updated in (190) and Health_bt in ('Port') and SumInsured >= 1000000 then netpr*.5
-	 when Product_updated in (190) and Health_bt in ('Port') and SumInsured < 1000000 then 0   --added
-	 when Product_updated in (106,138,144) then netpr   --verified with Lalit on 17 Jan 25
+	 --when Product_updated in (190) and Health_bt in ('Port') and SumInsured >= 1000000 then netpr*.5
+	 --when Product_updated in (190) and Health_bt in ('Port') and SumInsured < 1000000 then 0   --added
+	 --when Product_updated in (106,138,144) then netpr   --verified with Lalit on 17 Jan 25
 else netpr
 	 end as 'Accrual_Net_Pr'
 from t3
@@ -149,3 +149,4 @@ MON,Status,StatusId,Product_updated,product_name,Qtr_Locking_Date,Prev_end_date,
 (Accrual_Net_Ins * policy_issued_flag * special_deal_flag)*4 as W_Net,
 (Accrual_Net_Ins * policy_issued_flag * special_deal_flag * compliance_flag)*4 as W_Net_C
 from t5
+
