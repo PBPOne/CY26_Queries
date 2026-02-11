@@ -133,9 +133,11 @@ MON,Status,StatusId,Product_updated,product_name,bt,Qtr_Locking_Date,Prev_end_da
 (Accrual_Net_Ins * special_deal_flag) as Accrual_Net_Booked,
 (Accrual_Net_Ins * policy_issued_flag * special_deal_flag) as Accrual_Net,
 (Accrual_Net_Ins * policy_issued_flag * special_deal_flag * compliance_flag) as Accrual_Net_C,
+(Accrual_Net_Ins * special_deal_flag)*4 as W_Net_Booked,
 (Accrual_Net_Ins * policy_issued_flag * special_deal_flag)*4 as W_Net,
 (Accrual_Net_Ins * policy_issued_flag * special_deal_flag * compliance_flag)*4 as W_Net_C
 from t5
+
 
 
 
