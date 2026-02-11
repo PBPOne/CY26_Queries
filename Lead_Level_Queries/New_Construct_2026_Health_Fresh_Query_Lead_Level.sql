@@ -35,7 +35,7 @@ select
 	vw.BusinessType,vw.Status,cast(vw.PolicyStartDate as date) as PolicyStartDate,vw.StatusId,
 	vw.ProductId as Product_updated,
 	'Health' as product_name,
-	'Health_Fresh' as product_name,
+	'Health_Fresh' as bt,
 	case 
 		when Month(BookingDate) in (1,2,3) then DATEFROMPARTS(YEAR(BookingDate),5, 15)
 		when Month(BookingDate) in (4,5,6) then DATEFROMPARTS(YEAR(BookingDate),8, 15)
@@ -160,5 +160,6 @@ MON,Status,StatusId,Product_updated,product_name,Qtr_Locking_Date,Health_bt,poli
 (Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag)*4 as W_Net,
 (Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag * compliance_flag)*4 as W_Net_C
 from t5
+
 
 
