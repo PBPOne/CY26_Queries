@@ -35,6 +35,7 @@ select
 	vw.BusinessType,vw.Status,vw.StatusId,cast(vw.PolicyStartDate as date) as PolicyStartDate,cast(vw2.Prev_end_date as date) as Prev_end_date,
 	vw.ProductId as Product_updated,
 	'Health' as product_name,
+	'Health_Renewal' as bt,
 
 	case when Month(Prev_end_date) in (1,2,3) and BookingDate <= DATEFROMPARTS(YEAR(Prev_end_date),5, 15)  then DATEFROMPARTS(YEAR(Prev_end_date),5, 15)
 		when Month(Prev_end_date) in (4,5,6) and BookingDate <= DATEFROMPARTS(YEAR(Prev_end_date),8, 15) then DATEFROMPARTS(YEAR(Prev_end_date),8, 15)
@@ -135,6 +136,7 @@ MON,Status,StatusId,Product_updated,product_name,Qtr_Locking_Date,Prev_end_date,
 (Accrual_Net_Ins * policy_issued_flag * special_deal_flag)*4 as W_Net,
 (Accrual_Net_Ins * policy_issued_flag * special_deal_flag * compliance_flag)*4 as W_Net_C
 from t5
+
 
 
 
