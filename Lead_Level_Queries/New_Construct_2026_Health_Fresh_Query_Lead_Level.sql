@@ -144,7 +144,7 @@ t5 as
 (
 select *,
 case 
-    when health_insurers = 'PSU' and Product_updated > 3 then Accrual_Net_Pr * 0
+    when health_insurers = 'PSU' and Product_updated <> 3 then Accrual_Net_Pr * 0
     else Accrual_Net_Pr
 end as Accrual_Net_Ins,
 case when ComplianceCertified = 'Yes' and IsComplianceN = 'Yes' then 1 else 0 end as compliance_flag,
@@ -161,6 +161,7 @@ MON,Status,StatusId,Product_updated,product_name,bt,Qtr_Locking_Date,Health_bt,p
 (Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag)*4 as W_Net,
 (Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag * compliance_flag)*4 as W_Net_C
 from t5
+
 
 
 
