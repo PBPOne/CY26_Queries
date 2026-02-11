@@ -124,7 +124,7 @@ t5 as
 select *,
 case when health_insurers in ('PSU') then 0 else netpr end as 'Accrual_Net_Ins',
 case when ComplianceCertified = 'Yes' and IsComplianceN = 'Yes' then 1 else 0 end as compliance_flag
-from t4
+from t3
 )
 select --top 5 
 PartnerCode,SellNowEnabled,ComplianceCertified,IsComplianceN,compliance_flag,leadid,TotalPremium,APE,netpr,SumInsured,[Insurer Name], BookingDate,
@@ -135,5 +135,6 @@ MON,Status,StatusId,Product_updated,product_name,Qtr_Locking_Date,Prev_end_date,
 (Accrual_Net_Ins * policy_issued_flag * special_deal_flag)*4 as W_Net,
 (Accrual_Net_Ins * policy_issued_flag * special_deal_flag * compliance_flag)*4 as W_Net_C
 from t5
+
 
 
