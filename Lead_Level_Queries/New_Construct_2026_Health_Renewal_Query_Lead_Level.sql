@@ -141,7 +141,7 @@ case when ComplianceCertified = 'Yes' and IsComplianceN = 'Yes' then 1 else 0 en
 from t4
 )
 select --top 5 
-PartnerCode,SellNowEnabled,ComplianceCertified,IsComplianceN,compliance_flag,leadid,TotalPremium,APE,netpr,[Insurer Name], BookingDate,
+PartnerCode,SellNowEnabled,ComplianceCertified,IsComplianceN,compliance_flag,leadid,TotalPremium,APE,netpr,SumInsured,[Insurer Name], BookingDate,
 MON,Status,StatusId,Product_updated,product_name,Qtr_Locking_Date,Prev_end_date,Health_bt,policy_issued_flag,special_deal_flag, Accrual_Net_Pr, Accrual_Net_Ins,
 (Accrual_Net_Ins * special_deal_flag) as Accrual_Net_Booked,
 (Accrual_Net_Ins * policy_issued_flag * special_deal_flag) as Accrual_Net,
@@ -149,4 +149,3 @@ MON,Status,StatusId,Product_updated,product_name,Qtr_Locking_Date,Prev_end_date,
 (Accrual_Net_Ins * policy_issued_flag * special_deal_flag)*4 as W_Net,
 (Accrual_Net_Ins * policy_issued_flag * special_deal_flag * compliance_flag)*4 as W_Net_C
 from t5
-
