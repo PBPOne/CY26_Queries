@@ -153,13 +153,14 @@ from t4
 )
 select --top 5 
 PartnerCode,SellNowEnabled,ComplianceCertified,IsComplianceN,compliance_flag,leadid,TotalPremium,APE,netpr,SumInsured,[Insurer Name], BookingDate,
-MON,Status,StatusId,Product_updated,product_name,Qtr_Locking_Date,Health_bt,policy_booked_flag,policy_issued_flag,policy_verified_flag,special_deal_flag,Accrual_Net_Pr, Accrual_Net_Ins,
+MON,Status,StatusId,Product_updated,product_name,bt,Qtr_Locking_Date,Health_bt,policy_booked_flag,policy_issued_flag,policy_verified_flag,special_deal_flag,Accrual_Net_Pr, Accrual_Net_Ins,
 (Accrual_Net_Ins * special_deal_flag) as Accrual_Net_Booked,
 (Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag) as Accrual_Net,
 (Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag * compliance_flag) as Accrual_Net_C,
 (Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag)*4 as W_Net,
 (Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag * compliance_flag)*4 as W_Net_C
 from t5
+
 
 
 
