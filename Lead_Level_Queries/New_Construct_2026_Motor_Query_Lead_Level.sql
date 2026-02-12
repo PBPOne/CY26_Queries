@@ -156,19 +156,20 @@ from t4
 )
 select  --top 100 
 PartnerCode,SellNowEnabled,ComplianceCertified,
---IsComplianceN,
-compliance_flag,leadid,TotalPremium,APE,netpr,
---[Insurer Name],BookingMode, 
+--IsComplianceN,compliance_flag,
+leadid,TotalPremium,netpr,
+--APE,[Insurer Name],BookingMode, 
 BookingDate,MON,
 --SubProduct,VehicleSubClass,
-ODPremium,TPPremium,ODTerm,TPTerm,Status,StatusId,Product_updated,product_name,
---Qtr_Locking_Date,
-Motor_bt, motor_booked_flag,motor_cancelled_flag,policy_booked_flag,
---special_deal_flag,
+ODPremium,TPPremium,ODTerm,TPTerm,Status,Product_updated,product_name,
+--StatusId,Qtr_Locking_Date,
+Motor_bt, motor_booked_flag,motor_cancelled_flag,
+--policy_booked_flag,special_deal_flag,
 Accrual_Net_Pr, Accrual_Net_Ins,
 Accrual_Net_Ins * policy_booked_flag * special_deal_flag as Accrual_Net,
 Accrual_Net_Ins * policy_booked_flag * special_deal_flag * compliance_flag as Accrual_Net_C
 from t5
+
 
 
 
