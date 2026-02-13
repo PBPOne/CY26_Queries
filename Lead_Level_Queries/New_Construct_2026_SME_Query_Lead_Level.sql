@@ -29,7 +29,7 @@ from [PospDB].[dbo].vwAllBookingDetails vw (nolock)
 	where
 		vw.BookingDate >= d.min_date
 		and vw.BookingDate < d.max_date
-		and vw.ProductId in (193,194,221)
+		and vw.ProductId in (193,194,221) and vw.Status in ('Booked','Sale Complete')
 ),
 p_motor as (
 select 
@@ -107,6 +107,7 @@ MON,Status,StatusId,Product_updated,product_name,PlanName,Qtr_Locking_Date,speci
 (Accrual_Net_Pr * special_deal_flag)*1.25 as W_Net,
 (Accrual_Net_Pr * special_deal_flag * compliance_flag)*1.25 as W_Net_C
 from t5
+
 
 
 
