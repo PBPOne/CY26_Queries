@@ -12,8 +12,9 @@ spl_deals as
 
 all_bookings_1 as --bp
 (
-select LEADID, PlanId, SupplierId, ProductID, BasicPremium,PaymentPeriodicity,cast(issuanceDate as date) as issuanceDate--SupplierName,
+select LEADID, PlanId, SupplierId, ProductID, BasicPremium,PaymentPeriodicity--cast(issuanceDate as date) as issuanceDate,SupplierName,
 from [PospDB].[dbo].BookingDetails_v1 b1 (nolock)
+where ProductId in (7,115,200) 
 ),
 
 life_plans as --pl
@@ -50,7 +51,7 @@ from [PospDB].[dbo].vwAllBookingDetails vw (nolock)
 	where
 		vw.BookingDate >= d.min_date
 		and vw.BookingDate < d.max_date
-		and vw.ProductId in (7,115,200) 
+		and vw.ProductId in (7,115,200) and vw.Status in ('Booked','Policy Issued', 'Sale Complete','Soft Copy Received') 
 ),
 p_motor as (
 select 
@@ -82,7 +83,7 @@ select * from p_other
 
 t1 as
 (
-select vw.*, bp.BasicPremium,bp.issuanceDate,bp.PaymentPeriodicity,--bp.SupplierName,
+select vw.*, bp.BasicPremium,bp.PaymentPeriodicity,--bp.SupplierName,
 		pl.PayoutProdCat,pt.PayTerm,sd.MatrixLeadId
 from all_bookings vw
     left join all_bookings_1 bp on vw.leadid = bp.LEADID
@@ -153,7 +154,3 @@ MON,Status,StatusId,Product_updated,product_name,Qtr_Locking_Date,policy_issued_
 (Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag) * 1.5 as W_Net,
 (Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag * compliance_flag) * 1.5 as W_Net_C
 from t5
-
-
-
-
