@@ -14,7 +14,10 @@ all_bookings_1 as --bp
 (
 select LEADID, PlanId, SupplierId, ProductID, BasicPremium,PaymentPeriodicity--cast(issuanceDate as date) as issuanceDate,SupplierName,
 from [PospDB].[dbo].BookingDetails_v1 b1 (nolock)
-where ProductId in (7,115,200) 
+cross join dates d
+where ProductId in (7,115,200)
+and BookingDate >= d.min_date
+and BookingDate < d.max_date 
 ),
 
 life_plans as --pl
@@ -154,3 +157,4 @@ MON,Status,StatusId,Product_updated,product_name,Qtr_Locking_Date,policy_issued_
 (Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag) * 1.5 as W_Net,
 (Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag * compliance_flag) * 1.5 as W_Net_C
 from t5
+
