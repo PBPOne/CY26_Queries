@@ -38,6 +38,7 @@ from [PospDB].[dbo].vwAllBookingDetails vw (nolock)
 	cross join dates d
 	where
 		vw.ProductId in (186,187,188) --Motor BU
+		and vw.Leadsource <> 'B2CMRP'
 		and vw.BookingDate >= d.min_date
 		and vw.BookingDate < d.max_date
 
