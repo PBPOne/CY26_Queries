@@ -35,7 +35,7 @@ import requests
 import re
 from sqlalchemy import create_engine, text
 #==============================================
-condition = "PartnerCode IN ('IP110231')"
+#condition = "PartnerCode IN ('IP110231')"
 #==============================================
 
 sql_urls = {
