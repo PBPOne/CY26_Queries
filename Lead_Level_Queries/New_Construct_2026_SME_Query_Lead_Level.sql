@@ -107,6 +107,8 @@ MON,Status,StatusId,Product_updated,product_name,PlanName,Qtr_Locking_Date,speci
 (Accrual_Net_Pr * special_deal_flag)*1.25 as W_Net,
 (Accrual_Net_Pr * special_deal_flag * compliance_flag)*1.25 as W_Net_C
 from t5
+WHERE 1=1
+-- CONDITION_PLACEHOLDER
 
 
 
