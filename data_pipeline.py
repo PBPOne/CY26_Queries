@@ -1,42 +1,8 @@
-import sqlite3
-import pymysql
-import pyodbc
-from tabulate import tabulate
-import pandas as pd
-import numpy as np
-import os
-import glob
-import warnings
-from html2image import Html2Image
-from tabulate import tabulate
-import smtplib
-from IPython.display import display_png
-import imgkit
-from PIL import Image
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.mime.base import MIMEBase
-from email.mime.image import MIMEImage
-from email import encoders
-import dataframe_image as dfi
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-from google.oauth2.service_account import Credentials
-from gspread_pandas import Spread, Client
-from decimal import Decimal
-import warnings
-import io
-from google.oauth2.service_account import Credentials
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseDownload
-warnings.simplefilter(action='ignore', category=FutureWarning)
-
 import requests
-import re
-from sqlalchemy import create_engine, text
-#==============================================
-#condition = "PartnerCode IN ('IP110231')"
-#==============================================
+import pandas as pd
+from sqlalchemy import create_engine
+
+# ---------------- CONFIG ---------------- #
 
 sql_urls = {
     "Motor": "https://raw.githubusercontent.com/PBPOne/CY26_Queries/main/Lead_Level_Queries/New_Construct_2026_Motor_Query_Lead_Level.sql",
@@ -47,37 +13,106 @@ sql_urls = {
     "Health_Persistency": "https://raw.githubusercontent.com/PBPOne/CY26_Queries/main/Health_Persistency.sql"
 }
 
-engine = create_engine(
-    "mssql+pyodbc://Ranjaysingh:j%405%40Pj1%23%24%21ive"
-    "@pbpartnersqldb.cnizbobl3wux.ap-south-1.rds.amazonaws.com/PospDB"
-    "?driver=ODBC+Driver+17+for+SQL+Server"
-)
+# ---------------- DB CONNECTION ---------------- #
 
-dfs = {}
+def get_engine():
+    return create_engine(
+        "mssql+pyodbc://Ranjaysingh:j%405%40Pj1%23%24%21ive"
+        "@pbpartnersqldb.cnizbobl3wux.ap-south-1.rds.amazonaws.com/PospDB"
+        "?driver=ODBC+Driver+17+for+SQL+Server"
+    )
 
-for name, url in sql_urls.items():
-    
-    sql_script = requests.get(url).content.decode("utf-8-sig").rstrip().rstrip(";")
-    
-    if "-- CONDITION_PLACEHOLDER" in sql_script:
-        sql_script = sql_script.replace(
-            "-- CONDITION_PLACEHOLDER",
-            f"AND {condition}"
-        )
-    else:
-        sql_script = f"""
-        SELECT *
-        FROM (
-            {sql_script}
-        ) t
-        WHERE {condition}
-        """
-    dfs[name] = pd.read_sql_query(sql_script, engine)
+# ---------------- QUERY EXECUTION ---------------- #
 
-# Assign outputs
-df_Motor = dfs["Motor"]
-df_Health_Fresh = dfs["Health_Fresh"]
-df_Health_Renewal = dfs["Health_Renewal"]
-df_Life = dfs["Life"]
-df_SME = dfs["SME"]
-df_Health_Persistency = dfs["Health_Persistency"]
+def run_queries(condition):
+
+    engine = get_engine()
+    dfs = {}
+
+    for name, url in sql_urls.items():
+
+        print(f"Running query: {name}")
+
+        sql_script = requests.get(url).content.decode("utf-8-sig").rstrip().rstrip(";")
+
+        # Apply condition
+        if "-- CONDITION_PLACEHOLDER" in sql_script:
+            sql_script = sql_script.replace(
+                "-- CONDITION_PLACEHOLDER",
+                f"AND {condition}"
+            )
+        else:
+            sql_script = f"""
+            SELECT *
+            FROM (
+                {sql_script}
+            ) t
+            WHERE {condition}
+            """
+
+        dfs[name] = pd.read_sql_query(sql_script, engine)
+
+    return dfs
+
+# ---------------- DATA PROCESSING ---------------- #
+
+def process_data(dfs):
+
+    df_Motor = dfs["Motor"]
+    df_Health_Fresh = dfs["Health_Fresh"]
+    df_Health_Renewal = dfs["Health_Renewal"]
+    df_Life = dfs["Life"]
+    df_SME = dfs["SME"]
+
+    # Combine
+    Data = pd.concat(
+        [df_Motor, df_Health_Fresh, df_Health_Renewal, df_Life, df_SME],
+        axis=0
+    )
+
+    # Fill flags
+    Data.fillna({
+        'policy_booked_flag': 1,
+        'policy_issued_flag': 1,
+        'policy_verified_flag': 1,
+        'motor_booked_flag': 0,
+        'motor_cancelled_flag': 0
+    }, inplace=True)
+
+    # Fallback mapping
+    fallback_map = {
+        'Accrual_Net_Pr': 'netpr',
+        'Accrual_Net_Ins': 'Accrual_Net_Pr',
+        'Accrual_Net_Booked': 'Accrual_Net',
+        'W_Net': 'Accrual_Net',
+        'W_Net_C': 'Accrual_Net_C',
+        'W_Net_Booked': 'W_Net',
+        'bt': 'product_name'
+    }
+
+    for target, source in fallback_map.items():
+        if target in Data.columns and source in Data.columns:
+            Data[target] = Data[target].fillna(Data[source])
+
+    # Date conversion
+    if 'MON' in Data.columns:
+        Data['MON'] = pd.to_datetime(Data['MON'], errors='coerce')
+
+    if 'Prev_end_date' in Data.columns:
+        Data['Prev_end_date'] = pd.to_datetime(Data['Prev_end_date'], errors='coerce')
+
+    return Data
+
+# ---------------- MAIN FUNCTION ---------------- #
+
+def get_final_data(partner_codes):
+
+    # Build condition dynamically
+    partners = ",".join([f"'{p}'" for p in partner_codes])
+    condition = f"PartnerCode IN ({partners})"
+
+    dfs = run_queries(condition)
+
+    Data = process_data(dfs)
+
+    return Data
