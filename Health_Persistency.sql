@@ -70,6 +70,8 @@ row_number() over(Partition by Year, PartnerCode order by Year,PartnerCode, Quar
 from t1
 )
 select * from t2
+WHERE 1=1
+-- CONDITION_PLACEHOLDER
 
 
 
