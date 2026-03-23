@@ -170,6 +170,8 @@ Accrual_Net_Pr, Accrual_Net_Ins,
 Accrual_Net_Ins * policy_booked_flag * special_deal_flag as Accrual_Net,
 Accrual_Net_Ins * policy_booked_flag * special_deal_flag * compliance_flag as Accrual_Net_C
 from t5
+WHERE 1=1
+-- CONDITION_PLACEHOLDER
 
 
 
