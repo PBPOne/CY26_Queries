@@ -161,6 +161,8 @@ MON,Status,StatusId,Product_updated,product_name,bt,Qtr_Locking_Date,Health_bt,p
 (Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag)*4 as W_Net,
 (Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag * compliance_flag)*4 as W_Net_C
 from t5
+WHERE 1=1
+-- CONDITION_PLACEHOLDER
 
 
 
