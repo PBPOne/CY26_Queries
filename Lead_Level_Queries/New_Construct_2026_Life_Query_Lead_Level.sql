@@ -161,3 +161,5 @@ MON,Status,StatusId,Product_updated,product_name,Qtr_Locking_Date,policy_issued_
 (Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag) * 1.5 as W_Net,
 (Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag * compliance_flag) * 1.5 as W_Net_C
 from t5
+WHERE 1=1
+-- CONDITION_PLACEHOLDER
