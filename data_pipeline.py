@@ -13,7 +13,7 @@ sql_urls = {
     "Health_Persistency": "https://raw.githubusercontent.com/PBPOne/CY26_Queries/main/Health_Persistency.sql"
 }
 
-# ---------------- DB CONNECTION ---------------- #
+# ---------------- DB ---------------- #
 
 def get_engine():
     return create_engine(
@@ -22,7 +22,7 @@ def get_engine():
         "?driver=ODBC+Driver+17+for+SQL+Server"
     )
 
-# ---------------- QUERY EXECUTION ---------------- #
+# ---------------- QUERY ---------------- #
 
 def run_queries(condition):
 
@@ -31,11 +31,10 @@ def run_queries(condition):
 
     for name, url in sql_urls.items():
 
-        print(f"Running query: {name}")
+        print(f"Running: {name}")
 
         sql_script = requests.get(url).content.decode("utf-8-sig").rstrip().rstrip(";")
 
-        # Apply condition
         if "-- CONDITION_PLACEHOLDER" in sql_script:
             sql_script = sql_script.replace(
                 "-- CONDITION_PLACEHOLDER",
@@ -44,9 +43,7 @@ def run_queries(condition):
         else:
             sql_script = f"""
             SELECT *
-            FROM (
-                {sql_script}
-            ) t
+            FROM ({sql_script}) t
             WHERE {condition}
             """
 
@@ -54,23 +51,15 @@ def run_queries(condition):
 
     return dfs
 
-# ---------------- DATA PROCESSING ---------------- #
+# ---------------- PROCESS ---------------- #
 
 def process_data(dfs):
 
-    df_Motor = dfs["Motor"]
-    df_Health_Fresh = dfs["Health_Fresh"]
-    df_Health_Renewal = dfs["Health_Renewal"]
-    df_Life = dfs["Life"]
-    df_SME = dfs["SME"]
-
-    # Combine
     Data = pd.concat(
-        [df_Motor, df_Health_Fresh, df_Health_Renewal, df_Life, df_SME],
+        [dfs["Motor"], dfs["Health_Fresh"], dfs["Health_Renewal"], dfs["Life"], dfs["SME"]],
         axis=0
     )
 
-    # Fill flags
     Data.fillna({
         'policy_booked_flag': 1,
         'policy_issued_flag': 1,
@@ -79,7 +68,6 @@ def process_data(dfs):
         'motor_cancelled_flag': 0
     }, inplace=True)
 
-    # Fallback mapping
     fallback_map = {
         'Accrual_Net_Pr': 'netpr',
         'Accrual_Net_Ins': 'Accrual_Net_Pr',
@@ -94,7 +82,6 @@ def process_data(dfs):
         if target in Data.columns and source in Data.columns:
             Data[target] = Data[target].fillna(Data[source])
 
-    # Date conversion
     if 'MON' in Data.columns:
         Data['MON'] = pd.to_datetime(Data['MON'], errors='coerce')
 
@@ -103,16 +90,11 @@ def process_data(dfs):
 
     return Data
 
-# ---------------- MAIN FUNCTION ---------------- #
+# ---------------- MAIN ---------------- #
 
-def get_final_data(partner_codes):
-
-    # Build condition dynamically
-    partners = ",".join([f"'{p}'" for p in partner_codes])
-    condition = f"PartnerCode IN ({partners})"
+def get_final_data(condition):
 
     dfs = run_queries(condition)
-
     Data = process_data(dfs)
 
     return Data
