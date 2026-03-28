@@ -35,6 +35,7 @@ select
 	vw.BusinessType,vw.Status,cast(vw.PolicyStartDate as date) as PolicyStartDate,vw.StatusId,
 	vw.ProductId as Product_updated,
 	'Health' as product_name,
+	'Health_Fresh' as bt,
 	case 
 		when Month(BookingDate) in (1,2,3) then DATEFROMPARTS(YEAR(BookingDate),5, 15)
 		when Month(BookingDate) in (4,5,6) then DATEFROMPARTS(YEAR(BookingDate),8, 15)
@@ -96,7 +97,7 @@ select
 
 	 case when  BusinessType in ('Fresh Booking','New','NEW BUSINESS','Fresh') then 'New'
 	      when  BusinessType in ('Fresh Port','New Port','Rollover Port','Rollover') then 'Port'
-		  when  BusinessType in ('Renewal') then 'Renewal'
+		  --when  BusinessType in ('Renewal') then 'Renewal'
 		  end as Health_bt
 from t1
 inner join p1 on t1.Utm_term = p1.PartnerCode
@@ -105,7 +106,7 @@ t3 as
 (
 select  t2.*, APE as netpr,
 
---1 as policy_booked_flag,
+1 as policy_booked_flag,
 
 case when StatusId in (41, 42, 44) then 1
 	else 0 end as policy_issued_flag,
@@ -143,24 +144,28 @@ t5 as
 (
 select *,
 case 
-    when health_insurers = 'PSU' then Accrual_Net_Pr * 0
+    when health_insurers = 'PSU' and Product_updated <> 3 then Accrual_Net_Pr * 0
     else Accrual_Net_Pr
 end as Accrual_Net_Ins,
 case when ComplianceCertified = 'Yes' and IsComplianceN = 'Yes' then 1 else 0 end as compliance_flag,
 'Health_Fresh' as pd
 from t4
 )
-select
-PartnerCode,
-pd as product_name, MON,
-sum(TotalPremium) as TotalPremium,
-sum(APE) as APE, 
-sum(netpr) as Net_Pr,
-sum(Accrual_Net_Ins * special_deal_flag) as Accrual_Net_Booked,
-sum(Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag) as Accrual_Net,
-sum(case when compliance_flag=1 then Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag else 0 end) as Accrual_Net_C
+select --top 5 
+PartnerCode,SellNowEnabled,ComplianceCertified,IsComplianceN,compliance_flag,leadid,TotalPremium,APE,netpr,SumInsured,[Insurer Name], BookingDate,
+MON,Status,StatusId,Product_updated,product_name,bt,Qtr_Locking_Date,Health_bt,policy_booked_flag,policy_issued_flag,policy_verified_flag,special_deal_flag,Accrual_Net_Pr, Accrual_Net_Ins,
+(Accrual_Net_Ins * special_deal_flag) as Accrual_Net_Booked,
+(Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag) as Accrual_Net,
+(Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag * compliance_flag) as Accrual_Net_C,
+(Accrual_Net_Ins * special_deal_flag)*4 as W_Net_Booked,
+(Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag)*4 as W_Net,
+(Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag * compliance_flag)*4 as W_Net_C
 from t5
-group by 
-PartnerCode,
-pd, MON
+WHERE 1=1
+-- CONDITION_PLACEHOLDER
+
+
+
+
+
 

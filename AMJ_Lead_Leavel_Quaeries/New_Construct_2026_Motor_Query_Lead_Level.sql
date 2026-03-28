@@ -21,7 +21,7 @@ select
 	vw.[Insurer Name],vw.BookingMode,vw.BookingDate,
 	DATEFROMPARTS(YEAR(vw.BookingDate), MONTH(vw.BookingDate), 1) as MON,
 	vw.BusinessType, vw.SubProduct,vw.VehicleSubClass,
-	vw.ODPremium,vw.TPPremium,vw.ODTerm,vw.TPTerm,vw.Status,cast(vw.PolicyStartDate as date) as PolicyStartDate,vw.StatusId,
+	vw.ODPremium,vw.TPPremium,vw.ODTerm,vw.TPTerm,vw.Status,vw.StatusId,
 	'Motor' as product_name,
 	case 
 		when vw.ProductId in (186) and vw.SubProduct = 'Taxi' then 188 
@@ -38,6 +38,7 @@ from [PospDB].[dbo].vwAllBookingDetails vw (nolock)
 	cross join dates d
 	where
 		vw.ProductId in (186,187,188) --Motor BU
+		and vw.Leadsource <> 'B2CMRP'
 		and vw.BookingDate >= d.min_date
 		and vw.BookingDate < d.max_date
 
@@ -135,7 +136,7 @@ case when Product_updated in (188) and BookingMode in ('Online') and Motor_bt in
 	 when Product_updated in (187) and ODTerm >0 and BookingMode in ('Offline') and Motor_bt in ('New','Renewal') then netpr*0
 --Two Wheeler TP
 	 when Product_updated in (187) and ODTerm =0 and TPTerm >0 and BookingMode in ('Online') and Motor_bt in ('New','Renewal') then netpr
-	 when Product_updated in (187) and ODTerm =0 and TPTerm >0 and BookingMode in ('Offline') and Motor_bt in ('New','Renewal') then netpr
+	 when Product_updated in (187) and ODTerm =0 and TPTerm >0 and BookingMode in ('Offline') and Motor_bt in ('New','Renewal') then netpr*0
 
 else netpr
 	 end as 'Accrual_Net_Pr'
@@ -154,21 +155,30 @@ case when ComplianceCertified = 'Yes' and IsComplianceN = 'Yes' then 1 else 0 en
 	
 from t4
 )
-select 
-PartnerCode,
-product_name, MON,
-sum(TotalPremium) as TotalPremium,
-sum(APE) as APE,
-sum(netpr) as Net_Pr,
---sum(Accrual_Net_Ins * special_deal_flag) as Accrual_Net_Booked,
-sum(Accrual_Net_Ins * policy_booked_flag * special_deal_flag) as Accrual_Net,
-sum(case when compliance_flag=1 then (Accrual_Net_Ins * policy_booked_flag * special_deal_flag) else 0 end) as Accrual_Net_C,
-sum(motor_booked_flag) as motor_booked,
-sum(motor_cancelled_flag) as motor_cancelled
+select  --top 100 
+PartnerCode,SellNowEnabled,ComplianceCertified,
+IsComplianceN,compliance_flag,
+leadid,TotalPremium,netpr,
+APE,[Insurer Name],BookingMode, 
+BookingDate,MON,
+SubProduct,VehicleSubClass,
+ODPremium,TPPremium,ODTerm,TPTerm,Status,Product_updated,product_name,
+StatusId,Qtr_Locking_Date,
+Motor_bt, motor_booked_flag,motor_cancelled_flag,
+policy_booked_flag,special_deal_flag,
+Accrual_Net_Pr, Accrual_Net_Ins,
+Accrual_Net_Ins * policy_booked_flag * special_deal_flag as Accrual_Net,
+Accrual_Net_Ins * policy_booked_flag * special_deal_flag * compliance_flag as Accrual_Net_C
 from t5
-group by 
-PartnerCode,
-product_name, MON
+WHERE 1=1
+-- CONDITION_PLACEHOLDER
+
+
+
+
+
+
+
 
 
 

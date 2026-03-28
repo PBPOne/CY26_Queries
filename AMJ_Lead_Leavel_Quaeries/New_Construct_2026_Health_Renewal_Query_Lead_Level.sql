@@ -1,6 +1,6 @@
 with dates as 
 			(select '2026-01-01' as min_date, 
-					'2026-04-01' as max_date),
+					'2027-01-01' as max_date),
 spl_deals as
 (
 	select 
@@ -35,6 +35,7 @@ select
 	vw.BusinessType,vw.Status,vw.StatusId,cast(vw.PolicyStartDate as date) as PolicyStartDate,cast(vw2.Prev_end_date as date) as Prev_end_date,
 	vw.ProductId as Product_updated,
 	'Health' as product_name,
+	'Health_Renewal' as bt,
 
 	case when Month(Prev_end_date) in (1,2,3) and BookingDate <= DATEFROMPARTS(YEAR(Prev_end_date),5, 15)  then DATEFROMPARTS(YEAR(Prev_end_date),5, 15)
 		when Month(Prev_end_date) in (4,5,6) and BookingDate <= DATEFROMPARTS(YEAR(Prev_end_date),8, 15) then DATEFROMPARTS(YEAR(Prev_end_date),8, 15)
@@ -119,25 +120,28 @@ case when  [Insurer Name] like '%National Insurance%'
 	 
 from t2
 ),
-t4 as
+t5 as
 (
 select *,
 case when health_insurers in ('PSU') then 0 else netpr end as 'Accrual_Net_Ins',
-case when ComplianceCertified = 'Yes' and IsComplianceN = 'Yes' then 1 else 0 end as compliance_flag,
-'Health_Renewal' as pd
+case when ComplianceCertified = 'Yes' and IsComplianceN = 'Yes' then 1 else 0 end as compliance_flag
 from t3
 )
-select  
-PartnerCode,
-pd as product_name, MON,
-sum(TotalPremium) as TotalPremium,
-sum(APE) as APE,
-sum(netpr) as Net_Pr,
-sum(Accrual_Net_Ins * special_deal_flag) as Accrual_Net_Booked,
-sum(Accrual_Net_Ins * policy_issued_flag * special_deal_flag) as Accrual_Net,
-sum(case when compliance_flag=1 then (Accrual_Net_Ins * policy_issued_flag * special_deal_flag) else 0 end) as Accrual_Net_C
-from t4
-group by 
-PartnerCode,
-pd, MON
+select --top 5 
+PartnerCode,SellNowEnabled,ComplianceCertified,IsComplianceN,compliance_flag,leadid,TotalPremium,APE,netpr,SumInsured,[Insurer Name], BookingDate,
+MON,Status,StatusId,Product_updated,product_name,bt,Qtr_Locking_Date,Prev_end_date,Health_bt,policy_issued_flag,special_deal_flag, Accrual_Net_Ins,
+(Accrual_Net_Ins * special_deal_flag) as Accrual_Net_Booked,
+(Accrual_Net_Ins * policy_issued_flag * special_deal_flag) as Accrual_Net,
+(Accrual_Net_Ins * policy_issued_flag * special_deal_flag * compliance_flag) as Accrual_Net_C,
+(Accrual_Net_Ins * special_deal_flag)*4 as W_Net_Booked,
+(Accrual_Net_Ins * policy_issued_flag * special_deal_flag)*4 as W_Net,
+(Accrual_Net_Ins * policy_issued_flag * special_deal_flag * compliance_flag)*4 as W_Net_C
+from t5
+WHERE 1=1
+-- CONDITION_PLACEHOLDER
+
+
+
+
+
 

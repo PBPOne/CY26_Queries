@@ -29,7 +29,7 @@ from [PospDB].[dbo].vwAllBookingDetails vw (nolock)
 	where
 		vw.BookingDate >= d.min_date
 		and vw.BookingDate < d.max_date
-		and vw.ProductId in (193,194,221)
+		and vw.ProductId in (193,194,221) and vw.Status in ('Booked','Sale Complete')
 ),
 p_motor as (
 select 
@@ -94,22 +94,22 @@ from t3
 
 t5 as
 (
-select *, Accrual_Net_Pr * special_deal_flag as 'Accrual_Net_Ins',
+select *, 
 case when ComplianceCertified = 'Yes' and IsComplianceN = 'Yes' then 1 else 0 end as compliance_flag
 from t4
 )
 select
-PartnerCode,
-product_name, MON,
-sum(TotalPremium) as TotalPremium,
-sum(APE) as APE,
-sum(netpr) as Net_Pr,
-sum(Accrual_Net_Ins) as Accrual_Net,
-sum(case when compliance_flag = 1 then Accrual_Net_Ins else 0 end) as Accrual_Net_C
+PartnerCode,SellNowEnabled,ComplianceCertified,IsComplianceN,compliance_flag,leadid,TotalPremium,APE,netpr, BookingDate,
+MON,Status,StatusId,Product_updated,product_name,PlanName,Qtr_Locking_Date,special_deal_flag,Accrual_Net_Pr,
+--(Accrual_Net_Pr * special_deal_flag) as Accrual_Net_Booked,
+(Accrual_Net_Pr * special_deal_flag) as Accrual_Net,
+(Accrual_Net_Pr * special_deal_flag * compliance_flag) as Accrual_Net_C,
+(Accrual_Net_Pr * special_deal_flag)*1.25 as W_Net,
+(Accrual_Net_Pr * special_deal_flag * compliance_flag)*1.25 as W_Net_C
 from t5
-group by 
-PartnerCode,
-product_name, MON
+WHERE 1=1
+-- CONDITION_PLACEHOLDER
+
 
 
 

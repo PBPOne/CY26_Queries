@@ -14,6 +14,7 @@ all_bookings_1 as --bp
 (
 select LEADID, PlanId, SupplierId, ProductID, BasicPremium,PaymentPeriodicity,cast(issuanceDate as date) as issuanceDate--SupplierName,
 from [PospDB].[dbo].BookingDetails_v1 b1 (nolock)
+where ProductId in (7,115,200)
 ),
 
 life_plans as --pl
@@ -50,7 +51,7 @@ from [PospDB].[dbo].vwAllBookingDetails vw (nolock)
 	where
 		vw.BookingDate >= d.min_date
 		and vw.BookingDate < d.max_date
-		and vw.ProductId in (7,115,200) 
+		and vw.ProductId in (7,115,200) and vw.Status in ('Booked','Policy Issued', 'Sale Complete','Soft Copy Received') 
 ),
 p_motor as (
 select 
@@ -102,9 +103,17 @@ inner join p1 on t1.Utm_term = p1.PartnerCode
 t3 as
 (
 select  t2.*, BasicPremium as netpr,
-      case when Status in ('Policy Issued', 'Sale Complete','Soft Copy Received') then 1
-	  else 0 end as policy_issued_flag,
-	  case when MatrixLeadId is null then 1 else 0 end as special_deal_flag, ---0 means special deal
+      
+--1  as policy_booked_flag,
+
+case when Status in ('Policy Issued', 'Sale Complete','Soft Copy Received') then 1
+	else 0 end as policy_issued_flag,
+
+case when MatrixLeadId is null then 1 else 0 end as special_deal_flag, ---0 means special deal
+
+1  as policy_verified_flag,  --tentative
+
+	
 
 case when [Insurer Name] in ('LIC India') or [Insurer Name] like 'SBI%' then 'PSU'
 	when 
@@ -117,10 +126,11 @@ case when [Insurer Name] in ('LIC India') or [Insurer Name] like 'SBI%' then 'PS
 	else 'Others_pvt' end as life_insurers
 from t2
 ),
-	
 t4 as
 (
 select *,
+
+--Life
 case when  PaymentPeriodicity in ('Single','Single pay','Single Premium')  then 0
 	 when  PayoutProdCat = 'ULIP' then 0
 	 when PayTerm in (2,3,4) then netpr*.5
@@ -142,17 +152,14 @@ case when ComplianceCertified = 'Yes' and IsComplianceN = 'Yes' then 1 else 0 en
 from t4
 )
 select
-PartnerCode,
-product_name, MON,
-sum(TotalPremium) as TotalPremium,
-sum(APE) as APE,
-sum(netpr) as Net_Pr,
-sum(Accrual_Net_Ins * special_deal_flag) as Accrual_Net_Booked,
-sum(Accrual_Net_Ins * policy_issued_flag * special_deal_flag) as Accrual_Net,
-sum(case when compliance_flag=1 then (Accrual_Net_Ins * policy_issued_flag * special_deal_flag) else 0 end) as Accrual_Net_C
+PartnerCode,SellNowEnabled,ComplianceCertified,IsComplianceN,compliance_flag,leadid,TotalPremium,APE,netpr,PaymentPeriodicity,PayoutProdCat,PayTerm,[Insurer Name], BookingDate,
+MON,Status,StatusId,Product_updated,product_name,Qtr_Locking_Date,policy_issued_flag,policy_verified_flag,special_deal_flag,Accrual_Net_Pr, Accrual_Net_Ins,
+(Accrual_Net_Ins * special_deal_flag) as Accrual_Net_Booked,
+(Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag) as Accrual_Net,
+(Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag * compliance_flag) as Accrual_Net_C,
+(Accrual_Net_Ins * special_deal_flag) * 1.5 as W_Net_Booked,
+(Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag) * 1.5 as W_Net,
+(Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag * compliance_flag) * 1.5 as W_Net_C
 from t5
-group by 
-PartnerCode,
-product_name, MON
-
-
+WHERE 1=1
+-- CONDITION_PLACEHOLDER
