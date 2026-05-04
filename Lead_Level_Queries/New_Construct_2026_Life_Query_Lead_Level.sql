@@ -61,8 +61,8 @@ select
 		PartnerCode like 'IP%'
 		and SellNowEnabled = 'Yes' 
 		and ComplianceCertified = 'Yes'
-		and Markettype in ('Central_Vishal Khede','Dealership','East 1_Avishek Bhowmick','East 2_Ritesh Luktuke','North 1_Pawan Sehrawat','North 2_Rajesh Singh','South 1_Aritra Dasgupta','South 2_Amit Bhadoria','VRM _Gautam Ranjan','West_Anuj Aggarwal', 'Others')
-		and SalesCat not in  ('prime','Strategic Motor', 'Fleets')
+		and Markettype in ('Central_&_West_Vishal Khede','East_Avishek Bhowmick','North 1_Pawan Sehrawat','North 2_Rajesh Singh','North_Dealership','South 1_Aritra Dasgupta','South 2_Chirag Mehta','South 3_Amit Bhadoria','South_Dealership','VRM_Gautam Ranjan','VRM_Prashant Gulati','Others')
+		--and SalesCat not in  ('prime','Strategic Motor', 'Fleets')
 ),
 p_other as (
 select 
@@ -71,9 +71,8 @@ select
 	where 
 		PartnerCode like 'IP%'
 		and SellNowEnabled = 'Yes' 
-		and Markettype not in ('Central_Vishal Khede','Dealership','East 1_Avishek Bhowmick','East 2_Ritesh Luktuke','North 1_Pawan Sehrawat','North 2_Rajesh Singh','South 1_Aritra Dasgupta','South 2_Amit Bhadoria','VRM _Gautam Ranjan','West_Anuj Aggarwal',
-		'Fleets_Anuj Aggarwal', 'Strategic Motor', 'Others')
-		and SalesCat not in  ('prime','Strategic Motor','Fleets','Others')
+		and Markettype not in ('Central_&_West_Vishal Khede','East_Avishek Bhowmick','North 1_Pawan Sehrawat','North 2_Rajesh Singh','North_Dealership','South 1_Aritra Dasgupta','South 2_Chirag Mehta','South 3_Amit Bhadoria','South_Dealership','VRM_Gautam Ranjan','VRM_Prashant Gulati','Others','Fleets','Institutional','PRIME','Strategic Motor')
+		--and SalesCat not in  ('prime','Strategic Motor','Fleets','Others')
 ),
 p1 as 
 (select * from p_motor
