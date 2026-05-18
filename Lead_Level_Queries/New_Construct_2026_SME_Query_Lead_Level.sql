@@ -156,7 +156,8 @@ from t3
 t5 as
 (
 select *, 
-case when ComplianceCertified = 'Yes' and IsComplianceN = 'Yes' then 1 else 0 end as compliance_flag
+case when --ComplianceCertified = 'Yes' and 
+	IsComplianceN = 'Yes' then 1 else 0 end as compliance_flag
 from t4
 )
 select
