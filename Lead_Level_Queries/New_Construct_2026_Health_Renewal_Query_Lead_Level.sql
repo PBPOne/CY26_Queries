@@ -185,7 +185,8 @@ t5 as
 (
 select *,
 case when health_insurers in ('PSU') then 0 else netpr end as 'Accrual_Net_Ins',
-case when ComplianceCertified = 'Yes' and IsComplianceN = 'Yes' then 1 else 0 end as compliance_flag
+case when --ComplianceCertified = 'Yes' and 
+	IsComplianceN = 'Yes' then 1 else 0 end as compliance_flag
 from t3
 )
 select --top 5 
