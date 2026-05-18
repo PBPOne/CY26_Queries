@@ -211,7 +211,8 @@ case when motor_insurers in ('PSU') then Accrual_Net_Pr * .9
 	 when motor_insurers in ('Pvt') then Accrual_Net_Pr * .75
 	 else Accrual_Net_Pr 
 	 end as 'Accrual_Net_Ins',
-case when ComplianceCertified = 'Yes' and IsComplianceN = 'Yes' then 1 else 0 end as compliance_flag
+case when --ComplianceCertified = 'Yes' and 
+	IsComplianceN = 'Yes' then 1 else 0 end as compliance_flag
 	
 from t4
 )
