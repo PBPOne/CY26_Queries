@@ -215,7 +215,7 @@ case when ComplianceCertified = 'Yes' and IsComplianceN = 'Yes' then 1 else 0 en
 	
 from t4
 )
-select  top 100 
+select  --top 100 
 PartnerCode,SellNowEnabled,ComplianceCertified,
 IsComplianceN,compliance_flag,
 leadid,TotalPremium,netpr,
