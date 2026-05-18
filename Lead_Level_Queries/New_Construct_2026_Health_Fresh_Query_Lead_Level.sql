@@ -208,7 +208,8 @@ case
     when health_insurers = 'PSU' and Product_updated <> 3 then Accrual_Net_Pr * 0
     else Accrual_Net_Pr
 end as Accrual_Net_Ins,
-case when ComplianceCertified = 'Yes' and IsComplianceN = 'Yes' then 1 else 0 end as compliance_flag,
+case when --ComplianceCertified = 'Yes' and 
+	IsComplianceN = 'Yes' then 1 else 0 end as compliance_flag,
 'Health_Fresh' as pd
 from t4
 )
