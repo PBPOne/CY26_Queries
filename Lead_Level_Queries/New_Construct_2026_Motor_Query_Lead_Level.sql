@@ -180,8 +180,8 @@ case when Product_updated in (188) and BookingMode in ('Online') and Motor_bt in
 	 when Product_updated in (188) and BookingMode in ('Offline') and Motor_bt in ('New','Renewal') then netpr*.9
 --Private Car Brand New
 	 when Product_updated in (186) and ODTerm >=1 and TPTerm >=3 and BookingMode in ('Online') and Motor_bt in ('New','Renewal') then netpr
-	 when Product_updated in (186) and ODTerm >=1 and TPTerm >=3 and ODTerm >0 and BookingMode in ('Offline') and Motor_bt in ('New') then netpr*.9
-	 when Product_updated in (186) and ODTerm >=1 and TPTerm >=3 and ODTerm >0 and BookingMode in ('Offline') and Motor_bt in ('Renewal') then netpr*.8
+	 when Product_updated in (186) and ODTerm >=1 and TPTerm >=3 and BookingMode in ('Offline') and Motor_bt in ('New') then netpr*.9
+	 when Product_updated in (186) and ODTerm >=1 and TPTerm >=3 and BookingMode in ('Offline') and Motor_bt in ('Renewal') then netpr*.8
 --CarComp/ SAOD
 	 when Product_updated in (186) and ODTerm >0 and BookingMode in ('Online') and Motor_bt in ('New') then netpr*1.2
 	 when Product_updated in (186) and ODTerm >0 and BookingMode in ('Online') and Motor_bt in ('Renewal') then netpr
