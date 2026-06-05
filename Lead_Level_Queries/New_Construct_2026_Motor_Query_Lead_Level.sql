@@ -25,7 +25,7 @@ select
 	'Motor' as product_name,
 	case 
 		when vw.ProductId in (186) and vw.SubProduct = 'Taxi' then 188 
-		when vw.ProductId in (186) and vw.SubProduct is null and vw.VehicleSubClass = 'Taxi' then 188 --CV
+		when vw.ProductId in (186) and (vw.SubProduct is null or vw.SubProduct = '') and vw.VehicleSubClass = 'Taxi' then 188 --CV
 		else vw.ProductId end as Product_updated,
     
 	case 
