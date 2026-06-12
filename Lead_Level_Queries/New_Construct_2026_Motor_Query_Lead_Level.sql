@@ -80,9 +80,7 @@ p_sme_inclusion AS (
     )
 ),
 p1 as (
-    select * from p_motor
-    union all
-    select * from p_other
+    select * from p_base
     union all
     select * from p_sme_inclusion
 ),
