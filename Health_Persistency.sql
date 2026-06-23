@@ -14,7 +14,9 @@ WITH base_data AS (
     LEFT JOIN pospdb.dbo.LeadDetails_v1 as t2 
         ON t1.leadid = t2.ReferralID
     WHERE 
-        t1.PolicyEndDate >= '2026-01-01' AND t1.PolicyEndDate < '2027-01-01'
+        t1.PolicyEndDate >= '2026-01-01' 
+		AND t1.PolicyEndDate < '2027-01-01' 
+		and t1.PolicyEndDate <= CAST(GETDATE() AS DATE)
         AND t1.productid IN (190, 130,224) AND t1.StatusId IN (13,41,42,43,44)       
 ),
 Qtr_data as
@@ -72,10 +74,3 @@ from t1
 select * from t2
 WHERE 1=1
 -- CONDITION_PLACEHOLDER
-
-
-
-
-
-
-
