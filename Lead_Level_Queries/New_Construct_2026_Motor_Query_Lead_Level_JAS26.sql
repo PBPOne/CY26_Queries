@@ -1,6 +1,6 @@
 with dates as 
-			(select '2026-01-01' as min_date, 
-					'2027-01-01' as max_date),
+			(select '2026-07-01' as min_date, 
+					'2027-10-01' as max_date),
 spl_deals as
 (
 	select 
