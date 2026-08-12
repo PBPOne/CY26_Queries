@@ -6,8 +6,9 @@ spl_deals as
 	select 
 		[MatrixLeadId], product from [TestDB].[dbo].[tbl_ContestDB] t
 	cross join dates d
-		where 
-			t.ContestMonth >= d.min_date
+		where
+			t.IsActive =1
+			and t.ContestMonth >= d.min_date
 ),
 all_bookings as --vw
 (
