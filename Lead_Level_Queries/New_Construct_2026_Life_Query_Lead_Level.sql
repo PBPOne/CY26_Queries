@@ -9,7 +9,7 @@ spl_deals as
 		where
 			t.IsActive =1
 			and t.ContestMonth >= d.min_date
-)
+),
 
 all_bookings_1 as --bp
 (
