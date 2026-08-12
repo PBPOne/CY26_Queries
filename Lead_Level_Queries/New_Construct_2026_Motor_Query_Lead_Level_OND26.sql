@@ -6,9 +6,10 @@ spl_deals as
 	select 
 		[MatrixLeadId], product from [TestDB].[dbo].[tbl_ContestDB] t
 	cross join dates d
-		where 
-			t.ContestMonth >= d.min_date
-),
+		where
+			t.IsActive =1
+			and t.ContestMonth >= d.min_date
+)
 motor_business_type as
 	(select Leadid,
 	 case when PBPBusinessType in ('New','Rollover') then 'New' else 'Renewal' end as Motor_bt
