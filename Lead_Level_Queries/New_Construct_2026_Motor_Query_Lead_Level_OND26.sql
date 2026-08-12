@@ -9,7 +9,7 @@ spl_deals as
 		where
 			t.IsActive =1
 			and t.ContestMonth >= d.min_date
-)
+),
 motor_business_type as
 	(select Leadid,
 	 case when PBPBusinessType in ('New','Rollover') then 'New' else 'Renewal' end as Motor_bt
