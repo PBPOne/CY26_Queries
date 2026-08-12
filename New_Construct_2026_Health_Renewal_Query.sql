@@ -51,7 +51,6 @@ from [PospDB].[dbo].vwAllBookingDetails vw (nolock)
 	where
 	vw.ProductId in (130,190, 224) and vw.BusinessType in ('Renewal') ---Only Health Renewal Cases
 	and vw.BookingDate >= DATEADD(MONTH, -2, d.min_date)
-	and vw.BookingDate >= DATEADD(MONTH, -3, vw2.Prev_end_date) -- To avoid too early bookings discrepancy
 	and vw.BookingDate <  DATEADD(DAY, 15, DATEADD(MONTH, 1, d.max_date))
 	and StatusId in (41,42,43,44) 
 	and vw2.Prev_end_date >=  d.min_date 
