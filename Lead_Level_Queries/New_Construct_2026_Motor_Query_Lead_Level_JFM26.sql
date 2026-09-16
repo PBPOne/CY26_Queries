@@ -12,7 +12,7 @@ spl_deals as
 ),
 motor_business_type as
 	(select Leadid,
-	 case when PBPBusinessType in ('New','Rollover') then 'New' else 'Renewal' end as Motor_bt
+	 case when PBPBusinessType in ('New') then 'New' else 'Renewal' end as Motor_bt
 	 from PospDB.dbo.tbl_BookingBusinessType
 ),
 all_bookings as --vw
