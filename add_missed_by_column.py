@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 
-def add_missed_category(
+def add_missing_next_club_col(
     df,
     current_col,
     target_col,
@@ -69,5 +69,5 @@ if __name__ == '__main__':
         'Target':  [100, 100, 100, 100, 100, 100, 0],
     })
 
-    result = add_missed_category(sample, 'Current', 'Target')
+    result = add_missing_next_club_col(sample, 'Current', 'Target')
     print(result)
