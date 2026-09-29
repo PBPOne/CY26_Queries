@@ -102,7 +102,7 @@ from all_bookings vw
 	left join all_bookings_2 sumis on vw.leadid = sumis.LEADID and vw.ProductId = sumis.ProductID
 	left join Health_Verification_cte hv on vw.leadid = hv.LeadId
 	left join spl_deals sd on vw.leadid = sd.MatrixLeadId and vw.product_name= sd.product
-	where StatusId in (13, 39, 41, 42, 43, 44, 77)
+	--where StatusId in (13, 39, 41, 42, 43, 44, 77)
 ),
 t2 as
 (
