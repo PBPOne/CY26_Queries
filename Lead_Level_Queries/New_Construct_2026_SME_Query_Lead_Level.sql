@@ -119,7 +119,7 @@ from t4
 )
 select
 PartnerCode,SellNowEnabled,ComplianceCertified,Markettype,IsComplianceN,compliance_flag,leadid,TotalPremium,APE,netpr, BookingDate,
-MON,Status,StatusId,Product_updated,product_name,PlanName,Qtr_Locking_Date,special_deal_flag,Accrual_Net_Pr,
+MON,Status,StatusId,Product_updated,product_name,PlanName,Qtr_Locking_Date,policy_issued_flag,special_deal_flag,Accrual_Net_Pr,
 --(Accrual_Net_Pr * special_deal_flag) as Accrual_Net_Booked,
 (Accrual_Net_Pr * policy_issued_flag * special_deal_flag) as Accrual_Net,
 (Accrual_Net_Pr * policy_issued_flag * special_deal_flag * compliance_flag) as Accrual_Net_C,
