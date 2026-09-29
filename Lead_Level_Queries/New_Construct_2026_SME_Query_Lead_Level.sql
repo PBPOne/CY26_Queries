@@ -30,7 +30,8 @@ from [PospDB].[dbo].vwAllBookingDetails vw (nolock)
 	where
 		vw.BookingDate >= d.min_date
 		and vw.BookingDate < d.max_date
-		and vw.ProductId in (193,194,221) and vw.Status in ('Booked','Sale Complete')
+		and vw.ProductId in (193,194,221) 
+		--and vw.Status in ('Booked','Sale Complete')
 ),
 --All Partners Base
 p_base AS (
@@ -79,7 +80,7 @@ t1 as
 select vw.*,sd.MatrixLeadId
 from all_bookings vw
 	left join spl_deals sd on vw.leadid = sd.MatrixLeadId and vw.product_name= sd.product
-	where Status in ('Booked','Sale Complete')
+	--where Status in ('Booked','Sale Complete')
 ),
 t2 as
 (
@@ -91,8 +92,10 @@ inner join p1 on t1.Utm_term = p1.PartnerCode
 ),
 t3 as
 (
-select  t2.*, 
+select  t2.*,
 [Net Premium] as netpr,
+case when Status in ('Booked', 'Sale Complete') then 1
+	else 0 end as policy_issued_flag,
 case when MatrixLeadId is null then 1 else 0 end as special_deal_flag
 from t2
 ),
@@ -118,10 +121,10 @@ select
 PartnerCode,SellNowEnabled,ComplianceCertified,Markettype,IsComplianceN,compliance_flag,leadid,TotalPremium,APE,netpr, BookingDate,
 MON,Status,StatusId,Product_updated,product_name,PlanName,Qtr_Locking_Date,special_deal_flag,Accrual_Net_Pr,
 --(Accrual_Net_Pr * special_deal_flag) as Accrual_Net_Booked,
-(Accrual_Net_Pr * special_deal_flag) as Accrual_Net,
-(Accrual_Net_Pr * special_deal_flag * compliance_flag) as Accrual_Net_C,
-(Accrual_Net_Pr * special_deal_flag)*1.25 as W_Net,
-(Accrual_Net_Pr * special_deal_flag * compliance_flag)*1.25 as W_Net_C
+(Accrual_Net_Pr * policy_issued_flag * special_deal_flag) as Accrual_Net,
+(Accrual_Net_Pr * policy_issued_flag * special_deal_flag * compliance_flag) as Accrual_Net_C,
+(Accrual_Net_Pr * policy_issued_flag * special_deal_flag)*1.25 as W_Net,
+(Accrual_Net_Pr * policy_issued_flag * special_deal_flag * compliance_flag)*1.25 as W_Net_C
 from t5
 WHERE 1=1
 -- CONDITION_PLACEHOLDER
