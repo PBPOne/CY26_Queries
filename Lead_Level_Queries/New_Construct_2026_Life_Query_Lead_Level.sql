@@ -106,7 +106,7 @@ from all_bookings vw
 	left join life_plans pl on bp.PlanId = pl.PlanID and bp.ProductID = pl.ProductID and bp.SupplierId = pl.SupplierID
 	left join Payterm_cte pt on vw.leadid = pt.LeadId
 	left join spl_deals sd on vw.leadid = sd.MatrixLeadId and vw.product_name= sd.product
-	where Status in ('Booked','Policy Issued','Sale Complete','Soft Copy Received')
+	--where Status in ('Booked','Policy Issued','Sale Complete','Soft Copy Received')
 ),
 t2 as
 (
