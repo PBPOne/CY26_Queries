@@ -52,7 +52,8 @@ from [PospDB].[dbo].vwAllBookingDetails vw (nolock)
 	where
 		vw.BookingDate >= d.min_date
 		and vw.BookingDate < d.max_date
-		and vw.ProductId in (7,115,200) and vw.Status in ('Booked','Policy Issued', 'Sale Complete','Soft Copy Received') 
+		and vw.ProductId in (7,115,200) 
+		--and vw.Status in ('Booked','Policy Issued', 'Sale Complete','Soft Copy Received') 
 ),
 --All Partners Base
 p_base AS (
