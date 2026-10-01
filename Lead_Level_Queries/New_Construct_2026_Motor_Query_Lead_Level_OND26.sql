@@ -4,7 +4,7 @@ with dates as
 spl_deals as
 (
 	select 
-		[MatrixLeadId], product from [TestDB].[dbo].[tbl_ContestDB] t
+		[MatrixLeadId], product from [TestDB].[dbo].[tbl_ContestDB] (nolock)  t
 	cross join dates d
 		where
 			t.IsActive =1
@@ -13,7 +13,13 @@ spl_deals as
 motor_business_type as
 	(select Leadid,
 	 case when PBPBusinessType in ('New') then 'New' else 'Renewal' end as Motor_bt
-	 from PospDB.dbo.tbl_BookingBusinessType
+	 from PospDB.dbo.tbl_BookingBusinessType nolock
+),
+policy_status_master as
+(
+select StatusId,
+case when StatusMode like'%P%' then 1 else 0 end as policy_status_flag
+from PospDB.dbo.StatusMaster nolock
 ),
 all_bookings as --vw
 (
@@ -87,10 +93,11 @@ p1 as (
 ),
 t1 as
 (
-select vw.*, mb.Motor_bt,sd.MatrixLeadId
+select vw.*, mb.Motor_bt,sd.MatrixLeadId, ps.policy_status_flag
 from all_bookings vw
 	left join motor_business_type mb on vw.leadid = mb.Leadid
 	left join spl_deals sd on vw.leadid = sd.MatrixLeadId and vw.product_name= sd.product
+	left join policy_status_master ps on vw.StatusId = ps.StatusId
 ),
 t2 as
 (
@@ -106,13 +113,9 @@ t3 as
 select  t2.*,
      (od_netpr+tp_netpr) as netpr,
 	 1  as motor_booked_flag,
-	 case when StatusId in (select StatusId  from [PospDB].[dbo].StatusMaster (nolock) where StatusName like 're%') 
-		  then  1 else 0 end as motor_cancelled_flag,
-	 case when StatusId in (select StatusId  from [PospDB].[dbo].StatusMaster (nolock) where StatusName not like 're%') 
-		  then  1 else 0 end as policy_booked_flag,
-
+	 case when policy_status_flag = 0 then  1 else 0 end as motor_cancelled_flag,
+	 case when policy_status_flag = 1 then  1 else 0 end as policy_booked_flag,
 	 case when MatrixLeadId is null then 1 else 0 end as special_deal_flag, ---0 means special deal
-
 	 case when [Insurer Name] like '%National Insurance%' 
 			or [Insurer Name] like '%Oriental%' 
 			or [Insurer Name] like '%United%' 
