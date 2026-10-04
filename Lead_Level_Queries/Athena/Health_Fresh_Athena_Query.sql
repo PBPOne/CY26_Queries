@@ -9,23 +9,29 @@ spl_deals as (
     where t.IsActive = 1
       and cast(cast(t.ContestMonth as timestamp) as date) >= d.min_date
 ),
-motor_business_type as (
-    select Leadid,
-           case when PBPBusinessType in ('New') then 'New' else 'Renewal' end as Motor_bt
-    from pospdb_dbo_tbl_BookingBusinessType
+all_bookings_2 as (
+    select distinct LEADID, SumInsured, ProductID
+    from pospdb_dbo_bookingdetails_v1
+    where ProductID in (3,106,118,130,138,144,189,190,147,224)
+    --and LeadId = 1269254796
+),
+Health_Verification_cte as (
+    select LeadId, VerificationStatus
+    from pospdb_dbo_HealthAdditionalDetails
+    where lower(VerificationStatus) like '%verif%'
 ),
 all_bookings as (
     select
-        upper(vw.Utm_term) as Utm_term, vw.leadid, vw.TotalPremium, vw.APE,
-        vw.netpremium as "Net Premium", vw.ProductId, vw.IsComplianceN,
+        upper(vw.Utm_term) as Utm_term, vw.leadid, vw.TotalPremium, vw.APE, vw.netpremium as "Net Premium",
+        vw.ProductId, vw.IsComplianceN,
         vw.insurername as "Insurer Name", vw.BookingMode, vw.bdt as BookingDate,
         cast(date_trunc('month', vw.bdt) as date) as MON,
-        vw.BusinessType, vw.SubProduct, vw.VehicleSubClass,
-        vw.ODPremium, vw.TPPremium, vw.ODTerm, vw.TPTerm, vw.Status, vw.StatusId,
-        'Motor' as product_name,
-        case
-            when vw.ProductId in (186) and (vw.SubProduct = 'Taxi' or vw.VehicleSubClass = 'Taxi') then 188
-            else vw.ProductId end as Product_updated,
+        vw.BusinessType, vw.Status,
+        cast(try_cast(vw.PolicyStartDate as timestamp) as date) as PolicyStartDate,
+        vw.StatusId,
+        vw.ProductId as Product_updated,
+        'Health' as product_name,
+        'Health_Fresh' as bt,
         case
             when month(vw.bdt) in (1,2,3) then date(concat(cast(year(vw.bdt) as varchar), '-05-15'))
             when month(vw.bdt) in (4,5,6) then date(concat(cast(year(vw.bdt) as varchar), '-08-15'))
@@ -37,11 +43,10 @@ all_bookings as (
         from pospdb_dbo_tbl_vwallbookingdetails
     ) vw
     cross join dates d
-    where vw.ProductId in (186,187,188)
-      --and utm_term = 'IP159977'
-      and vw.Leadsource <> 'B2CMRP'
-      and cast(vw.bdt as date) >= d.min_date
+    where cast(vw.bdt as date) >= d.min_date
       and cast(vw.bdt as date) <  d.max_date
+      and vw.ProductId in (3,106,118,130,138,144,189,190,147,224)
+      and vw.BusinessType not in ('Renewal')
 ),
 p_base as (
     select upper(PartnerCode) as PartnerCode, SellNowEnabled, ComplianceCertified, Markettype
@@ -65,84 +70,71 @@ p1 as (
     select * from p_sme_inclusion
 ),
 t1 as (
-    select vw.*, mb.Motor_bt, sd.MatrixLeadId
+    select vw.*, sumis.SumInsured, hv.VerificationStatus, sd.MatrixLeadId
     from all_bookings vw
-    left join motor_business_type mb on vw.leadid = mb.Leadid
+    left join all_bookings_2 sumis on vw.leadid = sumis.LEADID and vw.ProductId = sumis.ProductID
+    left join Health_Verification_cte hv on vw.leadid = hv.LeadId
     left join spl_deals sd on vw.leadid = sd.MatrixLeadId and vw.product_name = sd.product
 ),
 t2 as (
     select
         upper(p1.PartnerCode) as PartnerCode, p1.SellNowEnabled, p1.ComplianceCertified, p1.Markettype, t1.*,
-        case when ODTerm > 0 then cast(ODPremium as double) / ODTerm else 0 end as od_netpr,
-        case when TPTerm > 0 then cast(TPPremium as double) / TPTerm else 0 end as tp_netpr
+        case when lower(trim(BusinessType)) in ('fresh booking','new','new business','fresh') then 'New'
+             when lower(trim(BusinessType)) in ('fresh port','new port','rollover port','rollover') then 'Port'
+        end as Health_bt
     from t1
     inner join p1 on t1.Utm_term = p1.PartnerCode
 ),
 t3 as (
-    select t2.*,
-        (od_netpr + tp_netpr) as netpr,
-        1 as motor_booked_flag,
-        case when lower(Status) like 're%'
-             then 1 else 0 end as motor_cancelled_flag,
-        case when  lower(Status) not like 're%'
-             then 1 else 0 end as policy_booked_flag,
+    select t2.*, APE as netpr,
+        1 as policy_booked_flag,
+        case when StatusId in (41, 42, 44) then 1 else 0 end as policy_issued_flag,
         case when MatrixLeadId is null then 1 else 0 end as special_deal_flag,
+        case when VerificationStatus is not null then 1
+             when VerificationStatus is null and Product_updated in (190,130,224) and Health_bt in ('New', 'Port') then 0
+             else 1 end as policy_verified_flag,
         case when lower("Insurer Name") like '%national insurance%'
                or lower("Insurer Name") like '%oriental%'
                or lower("Insurer Name") like '%united%'
                or lower("Insurer Name") like '%new india%' then 'PSU'
-             when lower("Insurer Name") like '%sompo%' or lower("Insurer Name") like '%iffco%'
-               or lower("Insurer Name") like '%shriram%' or lower("Insurer Name") like '%raheja%' then 'Pvt'
-             else 'Others_pvt' end as motor_insurers
+             else 'Others_pvt' end as health_insurers
     from t2
 ),
 t4 as (
     select *,
-        case when Product_updated in (188) and BookingMode in ('Online') and Motor_bt in ('New','Renewal') then netpr
-             when Product_updated in (188) and BookingMode in ('Offline') and Motor_bt in ('New','Renewal') then netpr*.9
-             when Product_updated in (186) and ODTerm >=1 and TPTerm >=3 and BookingMode in ('Online') and Motor_bt in ('New','Renewal') then netpr
-             when Product_updated in (186) and ODTerm >=1 and TPTerm >=3 and BookingMode in ('Offline') and Motor_bt in ('New') then netpr*.9
-             when Product_updated in (186) and ODTerm >=1 and TPTerm >=3 and BookingMode in ('Offline') and Motor_bt in ('Renewal') then netpr*.8
-             when Product_updated in (186) and ODTerm >0 and BookingMode in ('Online') and Motor_bt in ('New') then netpr*1.2
-             when Product_updated in (186) and ODTerm >0 and BookingMode in ('Online') and Motor_bt in ('Renewal') then netpr
-             when Product_updated in (186) and ODTerm >0 and BookingMode in ('Offline') and Motor_bt in ('New') then netpr*.9
-             when Product_updated in (186) and ODTerm >0 and BookingMode in ('Offline') and Motor_bt in ('Renewal') then netpr*.8
-             when Product_updated in (186) and ODTerm =0 and TPTerm >0 and BookingMode in ('Online') and Motor_bt in ('New','Renewal') then netpr
-             when Product_updated in (186) and ODTerm =0 and TPTerm >0 and BookingMode in ('Offline') and Motor_bt in ('New','Renewal') then netpr*.5
-             when Product_updated in (187) and ODTerm >=1 and TPTerm >=5 and BookingMode in ('Online') and Motor_bt in ('New','Renewal') then netpr
-             when Product_updated in (187) and ODTerm >=1 and TPTerm >=5 and BookingMode in ('Offline') and Motor_bt in ('New','Renewal') then netpr*.8
-             when Product_updated in (187) and ODTerm >0 and BookingMode in ('Online') and Motor_bt in ('New') then netpr*1.1
-             when Product_updated in (187) and ODTerm >0 and BookingMode in ('Online') and Motor_bt in ('Renewal') then netpr
-             when Product_updated in (187) and ODTerm >0 and BookingMode in ('Offline') and Motor_bt in ('New','Renewal') then netpr*0
-             when Product_updated in (187) and ODTerm =0 and TPTerm >0 and BookingMode in ('Online') and Motor_bt in ('New','Renewal') then netpr
-             when Product_updated in (187) and ODTerm =0 and TPTerm >0 and BookingMode in ('Offline') and Motor_bt in ('New','Renewal') then netpr*0
+        case when Product_updated in (3,118,130,189,147,224) then netpr*1.25
+             when Product_updated in (190) and Health_bt in ('New') and SumInsured >= 1000000 then netpr*1.25
+             when Product_updated in (190) and Health_bt in ('New') and SumInsured >= 500000 and SumInsured < 1000000 then netpr*.75
+             when Product_updated in (190) and SumInsured < 500000 then netpr*0
+             when Product_updated in (190) and Health_bt in ('Port') and SumInsured >= 1000000 then netpr*.5
+             when Product_updated in (190) and Health_bt in ('Port') and SumInsured < 1000000 then 0
+             when Product_updated in (106,138,144) then netpr
              else netpr
         end as Accrual_Net_Pr
     from t3
 ),
 t5 as (
     select *,
-        case when motor_insurers in ('PSU') then Accrual_Net_Pr * .9
-             when motor_insurers in ('Pvt') then Accrual_Net_Pr * .75
+        case when health_insurers = 'PSU' and Product_updated <> 3 then Accrual_Net_Pr * 0
              else Accrual_Net_Pr
         end as Accrual_Net_Ins,
-        case when IsComplianceN = 'Yes' then 1 else 0 end as compliance_flag
+        case when IsComplianceN = 'Yes' then 1 else 0 end as compliance_flag,
+        'Health_Fresh' as pd
     from t4
 )
 select
-    PartnerCode, SellNowEnabled, ComplianceCertified, Markettype,
-    IsComplianceN, compliance_flag,
-    leadid, TotalPremium, netpr,
-    APE, "Insurer Name", BookingMode,
-    BookingDate, MON,
-    SubProduct, VehicleSubClass,
-    ODPremium, TPPremium, ODTerm, TPTerm, Status, Product_updated, product_name,
-    StatusId, Qtr_Locking_Date,
-    Motor_bt, motor_booked_flag, motor_cancelled_flag,
-    policy_booked_flag, special_deal_flag,
-    round(Accrual_Net_Pr,2) as Accrual_Net_Pr, 
-    round(Accrual_Net_Ins,2) as Accrual_Net_Ins,
-    round(Accrual_Net_Ins * policy_booked_flag * special_deal_flag,2) as Accrual_Net,
-    round(Accrual_Net_Ins * policy_booked_flag * special_deal_flag * compliance_flag,2) as Accrual_Net_C
+    PartnerCode, SellNowEnabled, ComplianceCertified, Markettype, IsComplianceN, compliance_flag,
+    leadid, TotalPremium, APE, netpr, SumInsured, "Insurer Name", BookingDate,
+    MON, Status, StatusId, Product_updated, product_name, bt, Qtr_Locking_Date, Health_bt,
+    policy_booked_flag, policy_issued_flag, policy_verified_flag, special_deal_flag,
+    Accrual_Net_Pr, Accrual_Net_Ins,
+    (Accrual_Net_Ins * special_deal_flag) as Accrual_Net_Booked,
+    (Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag) as Accrual_Net,
+    (Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag * compliance_flag) as Accrual_Net_C,
+    (Accrual_Net_Ins * special_deal_flag)*4 as W_Net_Booked,
+    (Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag)*4 as W_Net,
+    (Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag * compliance_flag)*4 as W_Net_C
 from t5
---where PartnerCode = 'IP159977'
+where 1=1
+--and leadid = 1190158523
+-- CONDITION_PLACEHOLDER
