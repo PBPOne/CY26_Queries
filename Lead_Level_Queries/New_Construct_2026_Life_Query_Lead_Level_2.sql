@@ -154,7 +154,7 @@ case when  PaymentPeriodicity in ('Single','Single pay','Single Premium')  then 
 	 when  PayoutProdCat = 'ULIP' then 0
 	 when  PayoutProdCat = 'TULIP' then 0.75
 	 when PayTerm in (2,3,4) then netpr*.5
-else netpr *.5
+else netpr
 	 end as 'Accrual_Net_Pr'
 from t3
 ),
