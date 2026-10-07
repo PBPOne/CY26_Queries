@@ -130,29 +130,29 @@ t4 as
 (
 select *,
 --CV
-case when Product_updated in (188) and BookingMode in ('Online') and Motor_bt in ('New','Renewal') then netpr
-	 when Product_updated in (188) and BookingMode in ('Offline') and Motor_bt in ('New','Renewal') then netpr*.9
+case when Product_updated in (188) and BookingMode in ('Online') and Motor_bt in ('New','Renewal') then netpr*.8
+	 when Product_updated in (188) and BookingMode in ('Offline') and Motor_bt in ('New','Renewal') then netpr*.7
 --Private Car Brand New
 	 when Product_updated in (186) and ODTerm >=1 and TPTerm >=3 and BookingMode in ('Online') and Motor_bt in ('New','Renewal') then netpr
-	 when Product_updated in (186) and ODTerm >=1 and TPTerm >=3 and BookingMode in ('Offline') and Motor_bt in ('New') then netpr*.9
-	 when Product_updated in (186) and ODTerm >=1 and TPTerm >=3 and BookingMode in ('Offline') and Motor_bt in ('Renewal') then netpr*.8
+	 when Product_updated in (186) and ODTerm >=1 and TPTerm >=3 and BookingMode in ('Offline') and Motor_bt in ('New') then netpr*.8
+	 when Product_updated in (186) and ODTerm >=1 and TPTerm >=3 and BookingMode in ('Offline') and Motor_bt in ('Renewal') then netpr*.7
 --CarComp/ SAOD
-	 when Product_updated in (186) and ODTerm >0 and BookingMode in ('Online') and Motor_bt in ('New') then netpr*1.2
-	 when Product_updated in (186) and ODTerm >0 and BookingMode in ('Online') and Motor_bt in ('Renewal') then netpr
-	 when Product_updated in (186) and ODTerm >0 and BookingMode in ('Offline') and Motor_bt in ('New') then netpr*.9
-	 when Product_updated in (186) and ODTerm >0 and BookingMode in ('Offline') and Motor_bt in ('Renewal') then netpr*.8 
+	 when Product_updated in (186) and ODTerm >0 and BookingMode in ('Online') and Motor_bt in ('New') then netpr
+	 when Product_updated in (186) and ODTerm >0 and BookingMode in ('Online') and Motor_bt in ('Renewal') then netpr*.8
+	 when Product_updated in (186) and ODTerm >0 and BookingMode in ('Offline') and Motor_bt in ('New') then netpr*.8
+	 when Product_updated in (186) and ODTerm >0 and BookingMode in ('Offline') and Motor_bt in ('Renewal') then netpr*.7
 --Private Car TP
-	 when Product_updated in (186) and ODTerm =0 and TPTerm >0 and BookingMode in ('Online') and Motor_bt in ('New','Renewal') then netpr
-	 when Product_updated in (186) and ODTerm =0 and TPTerm >0 and BookingMode in ('Offline') and Motor_bt in ('New','Renewal') then netpr*.5
+	 when Product_updated in (186) and ODTerm =0 and TPTerm >0 and BookingMode in ('Online') and Motor_bt in ('New','Renewal') then netpr *.8
+	 when Product_updated in (186) and ODTerm =0 and TPTerm >0 and BookingMode in ('Offline') and Motor_bt in ('New','Renewal') then netpr*0
 --Two Wheeler Brand New
 	 when Product_updated in (187) and ODTerm >=1 and TPTerm >=5 and BookingMode in ('Online') and Motor_bt in ('New','Renewal') then netpr
-	 when Product_updated in (187) and ODTerm >=1 and TPTerm >=5 and BookingMode in ('Offline') and Motor_bt in ('New','Renewal') then netpr*.8
+	 when Product_updated in (187) and ODTerm >=1 and TPTerm >=5 and BookingMode in ('Offline') and Motor_bt in ('New','Renewal') then netpr*.7
 --TW comp/SAOD
-	 when Product_updated in (187) and ODTerm >0 and BookingMode in ('Online') and Motor_bt in ('New') then netpr*1.1
-	 when Product_updated in (187) and ODTerm >0 and BookingMode in ('Online') and Motor_bt in ('Renewal') then netpr
+	 when Product_updated in (187) and ODTerm >0 and BookingMode in ('Online') and Motor_bt in ('New') then netpr
+	 when Product_updated in (187) and ODTerm >0 and BookingMode in ('Online') and Motor_bt in ('Renewal') then netpr*.9
 	 when Product_updated in (187) and ODTerm >0 and BookingMode in ('Offline') and Motor_bt in ('New','Renewal') then netpr*0
 --Two Wheeler TP
-	 when Product_updated in (187) and ODTerm =0 and TPTerm >0 and BookingMode in ('Online') and Motor_bt in ('New','Renewal') then netpr
+	 when Product_updated in (187) and ODTerm =0 and TPTerm >0 and BookingMode in ('Online') and Motor_bt in ('New','Renewal') then netpr*.8
 	 when Product_updated in (187) and ODTerm =0 and TPTerm >0 and BookingMode in ('Offline') and Motor_bt in ('New','Renewal') then netpr*0
 
 else netpr
@@ -164,8 +164,8 @@ from t3
 t5 as
 (
 select *, 
-case when motor_insurers in ('PSU') then Accrual_Net_Pr * .9
-	 when motor_insurers in ('Pvt') then Accrual_Net_Pr * .75
+case when motor_insurers in ('PSU') then Accrual_Net_Pr * .75
+	 when motor_insurers in ('Pvt') then Accrual_Net_Pr * .5
 	 else Accrual_Net_Pr 
 	 end as 'Accrual_Net_Ins',
 case when --ComplianceCertified = 'Yes' and 
