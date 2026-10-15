@@ -87,7 +87,7 @@ p1 as (
 ),
 t1 as
 (
-select vw.*, mb.Motor_bt,sd.MatrixLeadId
+select vw.*, isnull(mb.Motor_bt, 'Renewal') as Motor_bt,sd.MatrixLeadId
 from all_bookings vw
 	left join motor_business_type mb on vw.leadid = mb.Leadid
 	left join spl_deals sd on vw.leadid = sd.MatrixLeadId and vw.product_name= sd.product
