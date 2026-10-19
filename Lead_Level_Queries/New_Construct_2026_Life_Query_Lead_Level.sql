@@ -1,6 +1,6 @@
 with dates as 
 			(select '2026-01-01' as min_date, 
-					'2026-10-01' as max_date),
+					'2027-01-01' as max_date),
 spl_deals as
 (
 	select 
@@ -170,7 +170,9 @@ from t4
 )
 select
 PartnerCode,SellNowEnabled,ComplianceCertified,Markettype,IsComplianceN,compliance_flag,leadid,TotalPremium,APE,netpr,PaymentPeriodicity,PayoutProdCat,PayTerm,[Insurer Name], BookingDate,
-MON,Status,StatusId,Product_updated,product_name,Qtr_Locking_Date,policy_issued_flag,policy_verified_flag,special_deal_flag,Accrual_Net_Pr, Accrual_Net_Ins,
+MON,Status,StatusId,Product_updated,product_name,
+--Qtr_Locking_Date,
+policy_issued_flag,policy_verified_flag,special_deal_flag,Accrual_Net_Pr, Accrual_Net_Ins,
 (Accrual_Net_Ins * special_deal_flag) as Accrual_Net_Booked,
 (Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag) as Accrual_Net,
 (Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag * compliance_flag) as Accrual_Net_C,
