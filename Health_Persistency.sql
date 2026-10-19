@@ -53,19 +53,27 @@ on q.PartnerCode= a.PartnerCode and q.Year= a.Year
 t2 as
 (
 select *,
-case when Qtr_Health_Persistency >= .9 then .75
-	 when Qtr_Health_Persistency >= .8 then .65
-	 when Qtr_Health_Persistency >= .7 then .60
-	 when Qtr_Health_Persistency >= .6 then .55
-	 when Qtr_Health_Persistency < .6 then 0.0
+case when Qtr_Health_Persistency >= .9 and Quarter = 'Q4-OND' then .40
+	 when Qtr_Health_Persistency >= .9 and Quarter <> 'Q4-OND' then .75
+	 when Qtr_Health_Persistency >= .8 and Quarter = 'Q4-OND' then .35
+	 when Qtr_Health_Persistency >= .8 and Quarter <> 'Q4-OND' then .65
+	 when Qtr_Health_Persistency >= .7 and Quarter = 'Q4-OND' then .30
+	 when Qtr_Health_Persistency >= .7 and Quarter <> 'Q4-OND' then .60
+	 when Qtr_Health_Persistency >= .6 and Quarter = 'Q4-OND' then .25
+	 when Qtr_Health_Persistency >= .6 and Quarter <> 'Q4-OND' then .55
+	 else 0
 	 end as Qtr_Health_Persistency_Multiplier,
 
 case when Yearly_Renewal_due < 5 then 1
-	 when Annual_Health_Persistency >= .9 then .75
-	 when Annual_Health_Persistency >= .8 then .65
-	 when Annual_Health_Persistency >= .7 then .60
-	 when Annual_Health_Persistency >= .6 then .55
-	 when Annual_Health_Persistency < .6 then 0.0
+	 when Annual_Health_Persistency >= .9 and Quarter = 'Q4-OND' then .40
+	 when Annual_Health_Persistency >= .9 and Quarter <> 'Q4-OND' then .75
+	 when Annual_Health_Persistency >= .8 and Quarter = 'Q4-OND' then .35
+	 when Annual_Health_Persistency >= .8 and Quarter <> 'Q4-OND' then .65
+	 when Annual_Health_Persistency >= .7 and Quarter = 'Q4-OND' then .30
+	 when Annual_Health_Persistency >= .7 and Quarter <> 'Q4-OND' then .60
+	 when Annual_Health_Persistency >= .6 and Quarter = 'Q4-OND' then .25
+	 when Annual_Health_Persistency >= .6 and Quarter <> 'Q4-OND' then .55
+	 else 0
 	 end as Annual_Health_Persistency_Multiplier,
 	 'Health' as product_name, 'Renewal' as Health_bt,
 row_number() over(Partition by Year, PartnerCode order by Year,PartnerCode, Quarter) as rnk
