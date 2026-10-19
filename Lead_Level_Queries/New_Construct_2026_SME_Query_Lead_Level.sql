@@ -1,13 +1,13 @@
 with dates as 
 			(select '2026-01-01' as min_date, 
-					'2026-10-01' as max_date),
+					'2027-01-01' as max_date),
 spl_deals as
 (
 	select 
-		[MatrixLeadId], product from [TestDB].[dbo].[tbl_ContestDB] t
+		[MatrixLeadId], product from [TestDB].[dbo].[tbl_ContestDB] (nolock) t
 	cross join dates d
 		where
-			t.IsActive =1
+			t.IsActive = 1
 			and t.ContestMonth >= d.min_date
 ),
 all_bookings as --vw
@@ -94,7 +94,7 @@ t3 as
 (
 select  t2.*,
 [Net Premium] as netpr,
-case when Status in ('Booked', 'Sale Complete') then 1
+case when StatusId in (13, 44) then 1   --('Booked', 'Sale Complete')
 	else 0 end as policy_issued_flag,
 case when MatrixLeadId is null then 1 else 0 end as special_deal_flag
 from t2
@@ -102,11 +102,11 @@ from t2
 t4 as
 (
 select *,
-case when PlanName = 'Group Gratuity Plan' then netpr*.1
-	 when PlanName not in ('Group Gratuity Plan') and PlanName like '%Group%' then netpr*.25
-	 when PlanName not in ('Group Gratuity Plan') and PlanName not like '%Group%' then netpr*1.25
-else netpr
-	 end as 'Accrual_Net_Pr'
+case when PlanName like '%Group Gratuity Plan%' then netpr*.1
+	 when PlanName like '%Group%' then netpr*.25
+else 
+	(case when BookingDate >= '2026-10-01' then netpr *0.75 else netpr *1.25 end)
+end as 'Accrual_Net_Pr'
 from t3
 ),
 
@@ -119,7 +119,9 @@ from t4
 )
 select
 PartnerCode,SellNowEnabled,ComplianceCertified,Markettype,IsComplianceN,compliance_flag,leadid,TotalPremium,APE,netpr, BookingDate,
-MON,Status,StatusId,Product_updated,product_name,PlanName,Qtr_Locking_Date,policy_issued_flag,special_deal_flag,Accrual_Net_Pr,
+MON,Status,StatusId,Product_updated,product_name,PlanName,
+--Qtr_Locking_Date,
+policy_issued_flag,special_deal_flag,Accrual_Net_Pr,
 --(Accrual_Net_Pr * special_deal_flag) as Accrual_Net_Booked,
 (Accrual_Net_Pr * policy_issued_flag * special_deal_flag) as Accrual_Net,
 (Accrual_Net_Pr * policy_issued_flag * special_deal_flag * compliance_flag) as Accrual_Net_C,
