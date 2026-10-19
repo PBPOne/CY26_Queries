@@ -181,7 +181,7 @@ case when --ComplianceCertified = 'Yes' and
 	
 from t4
 )
-select  top 10 
+select  --top 10 
 PartnerCode,SellNowEnabled,ComplianceCertified,Markettype,
 IsComplianceN,compliance_flag,
 leadid,TotalPremium,netpr,
