@@ -7,13 +7,19 @@ spl_deals as
 		[MatrixLeadId], product from [TestDB].[dbo].[tbl_ContestDB] t
 	cross join dates d
 		where
-			t.IsActive =1
+			t.IsActive = 1
 			and t.ContestMonth >= d.min_date
 ),
 motor_business_type as
 	(select Leadid,
 	 case when PBPBusinessType in ('New') then 'New' else 'Renewal' end as Motor_bt
-	 from PospDB.dbo.tbl_BookingBusinessType
+	 from PospDB.dbo.tbl_BookingBusinessType nolock
+),
+policy_status_master as
+(
+select StatusId,
+case when StatusMode = 'P' then 1 else 0 end as policy_status_flag
+from PospDB.dbo.StatusMaster nolock
 ),
 all_bookings as --vw
 (
@@ -22,7 +28,7 @@ select
 	vw.[Insurer Name],vw.BookingMode,vw.BookingDate,
 	DATEFROMPARTS(YEAR(vw.BookingDate), MONTH(vw.BookingDate), 1) as MON,
 	vw.BusinessType, vw.SubProduct,vw.VehicleSubClass,
-	vw.ODPremium,vw.TPPremium,vw.ODTerm,vw.TPTerm,vw.Status,vw.StatusId,
+	vw.ODPremium,vw.TPPremium,vw.ODTerm,vw.TPTerm,vw.Status,vw.StatusId, [Plan Type],
 	'Motor' as product_name,
 	case 
 		when vw.ProductId in (186) and (vw.SubProduct = 'Taxi' or vw.VehicleSubClass = 'Taxi') then 188 
@@ -42,6 +48,7 @@ from [PospDB].[dbo].vwAllBookingDetails vw (nolock)
 		and vw.Leadsource <> 'B2CMRP'
 		and vw.BookingDate >= d.min_date
 		and vw.BookingDate < d.max_date
+		
 
 ),
 --All Partners Base
@@ -87,10 +94,11 @@ p1 as (
 ),
 t1 as
 (
-select vw.*, mb.Motor_bt,sd.MatrixLeadId
+select vw.*, isnull(mb.Motor_bt, 'Renewal') as Motor_bt,sd.MatrixLeadId,ps.policy_status_flag
 from all_bookings vw
 	left join motor_business_type mb on vw.leadid = mb.Leadid
 	left join spl_deals sd on vw.leadid = sd.MatrixLeadId and vw.product_name= sd.product
+	left join policy_status_master ps on vw.StatusId = ps.StatusId
 ),
 t2 as
 (
@@ -106,10 +114,8 @@ t3 as
 select  t2.*,
      (od_netpr+tp_netpr) as netpr,
 	 1  as motor_booked_flag,
-	 case when StatusId in (select StatusId  from [PospDB].[dbo].StatusMaster (nolock) where StatusName like 're%') 
-		  then  1 else 0 end as motor_cancelled_flag,
-	 case when StatusId in (select StatusId  from [PospDB].[dbo].StatusMaster (nolock) where StatusName not like 're%') 
-		  then  1 else 0 end as policy_booked_flag,
+	 case when policy_status_flag = 0 then  1 else 0 end as motor_cancelled_flag,
+	 case when policy_status_flag = 1 then  1 else 0 end as policy_booked_flag,
 
 	 case when MatrixLeadId is null then 1 else 0 end as special_deal_flag, ---0 means special deal
 
@@ -142,8 +148,13 @@ case when Product_updated in (188) and BookingMode in ('Online') and Motor_bt in
 	 when Product_updated in (186) and ODTerm =0 and TPTerm >0 and BookingMode in ('Online') and Motor_bt in ('New','Renewal') then netpr
 	 when Product_updated in (186) and ODTerm =0 and TPTerm >0 and BookingMode in ('Offline') and Motor_bt in ('New','Renewal') then netpr*.5
 --Two Wheeler Brand New
-	 when Product_updated in (187) and ODTerm >=1 and TPTerm >=5 and BookingMode in ('Online') and Motor_bt in ('New','Renewal') then netpr
-	 when Product_updated in (187) and ODTerm >=1 and TPTerm >=5 and BookingMode in ('Offline') and Motor_bt in ('New','Renewal') then netpr*.8
+	 when Product_updated in (187) and ODTerm >0 and TPTerm >0 and BookingMode in ('Online') 
+	 and Motor_bt in ('New') and BusinessType in ('New') then netpr
+
+	 when Product_updated in (187) and ODTerm >0 and TPTerm >0 and BookingMode in ('Offline') 
+	 and Motor_bt in ('New') and BusinessType in ('New') then netpr*.8
+	 --when Product_updated in (187) and ODTerm >=1 and TPTerm >=5 and BookingMode in ('Online') and Motor_bt in ('New','Renewal') then netpr
+	 --when Product_updated in (187) and ODTerm >=1 and TPTerm >=5 and BookingMode in ('Offline') and Motor_bt in ('New','Renewal') then netpr*.8
 --TW comp/SAOD
 	 when Product_updated in (187) and ODTerm >0 and BookingMode in ('Online') and Motor_bt in ('New') then netpr*1.1
 	 when Product_updated in (187) and ODTerm >0 and BookingMode in ('Online') and Motor_bt in ('Renewal') then netpr
@@ -170,20 +181,26 @@ case when --ComplianceCertified = 'Yes' and
 	
 from t4
 )
-select  --top 100 
+select  top 10 
 PartnerCode,SellNowEnabled,ComplianceCertified,Markettype,
 IsComplianceN,compliance_flag,
 leadid,TotalPremium,netpr,
 APE,[Insurer Name],BookingMode, 
 BookingDate,MON,
 SubProduct,VehicleSubClass,
-ODPremium,TPPremium,ODTerm,TPTerm,Status,Product_updated,product_name,
-StatusId,Qtr_Locking_Date,
-Motor_bt, motor_booked_flag,motor_cancelled_flag,
+ODPremium,TPPremium,ODTerm,TPTerm,
+[Plan Type] as PlanType,
+Status,Product_updated,product_name,
+StatusId,
+--Qtr_Locking_Date,
+BusinessType,Motor_bt, motor_booked_flag,motor_cancelled_flag,
 policy_booked_flag,special_deal_flag,
 Accrual_Net_Pr, Accrual_Net_Ins,
 Accrual_Net_Ins * policy_booked_flag * special_deal_flag as Accrual_Net,
 Accrual_Net_Ins * policy_booked_flag * special_deal_flag * compliance_flag as Accrual_Net_C
+
+--case when netpr > 0 then (Accrual_Net_Pr/netpr) else 0 end as prod_weight,
+--case when motor_insurers in ('PSU') then .9 when motor_insurers in ('pvt') then .75 else 1 end as insurer_weight 
 from t5
 WHERE 1=1
 -- CONDITION_PLACEHOLDER
