@@ -1,13 +1,13 @@
 with dates as 
 			(select '2026-01-01' as min_date, 
-					'2026-10-01' as max_date),
+					'2027-01-01' as max_date),
 spl_deals as
 (
 	select 
-		[MatrixLeadId], product from [TestDB].[dbo].[tbl_ContestDB] t
+		[MatrixLeadId], product from [TestDB].[dbo].[tbl_ContestDB] (nolock) t
 	cross join dates d
 		where
-			t.IsActive =1
+			t.IsActive = 1
 			and t.ContestMonth >= d.min_date
 ),
 
@@ -33,7 +33,17 @@ select
 	vw.Utm_term,vw.leadid,vw.TotalPremium,vw.APE,vw.[Net Premium],vw.ProductId,IsComplianceN,
 	vw.[Insurer Name],vw.BookingMode,vw.BookingDate,
 	DATEFROMPARTS(YEAR(vw.BookingDate), MONTH(vw.BookingDate), 1) as MON,
-	vw.BusinessType,vw.Status,cast(vw.PolicyStartDate as date) as PolicyStartDate,vw.StatusId,
+	vw.BusinessType,vw.Status,vw.StatusId,
+
+	cast(vw.PolicyStartDate as date) as PolicyStartDate,
+	cast(vw.PolicyEndDate as date) as PolicyEndDate,
+
+	case when vw.PolicyStartDate is null or vw.PolicyStartDate = ''
+			  or vw.PolicyEndDate is null or vw.PolicyEndDate = '' then 0
+		 when vw.BookingDate >= '2026-10-01' --and vw.BookingDate < d.max_date
+		 then  datediff(year,vw.PolicyStartDate,dateadd(day,1,vw.PolicyEndDate)) 
+		 else 1 end as Policy_Tenure,
+
 	vw.ProductId as Product_updated,
 	'Health' as product_name,
 	'Health_Fresh' as bt,
@@ -119,7 +129,8 @@ inner join p1 on t1.Utm_term = p1.PartnerCode
 ),
 t3 as
 (
-select  t2.*, APE as netpr,
+select  t2.*, 
+cast(case when Policy_Tenure > 1 then round(APE/Policy_Tenure,2) else APE end as decimal(18,2)) as netpr,
 
 1 as policy_booked_flag,
 
@@ -143,8 +154,12 @@ from t2
 t4 as
 (
 select *,
-case when Product_updated in (3,118,130,189,147,224) then netpr*1.25
-	 when Product_updated in (190) and Health_bt in ('New') and SumInsured >= 1000000 then netpr*1.25
+case when Product_updated in (3,118,130,189,147,224) and BookingDate >= '2026-10-01' then netpr
+	 when Product_updated in (3,118,130,189,147,224) then netpr *1.25
+
+	 when Product_updated in (190) and Health_bt in ('New') and SumInsured >= 1000000 and BookingDate >= '2026-10-01' then netpr *1.25
+	 when Product_updated in (190) and Health_bt in ('New') and SumInsured >= 1000000 then netpr
+
 	 when Product_updated in (190) and Health_bt in ('New') and SumInsured >= 500000 and SumInsured < 1000000 then netpr*.75
 	 when Product_updated in (190) and SumInsured < 500000  then netpr*0
 	 when Product_updated in (190) and Health_bt in ('Port') and SumInsured >= 1000000 then netpr*.5
@@ -169,12 +184,15 @@ from t4
 )
 select --top 5 
 PartnerCode,SellNowEnabled,ComplianceCertified,Markettype,IsComplianceN,compliance_flag,leadid,TotalPremium,APE,netpr,SumInsured,[Insurer Name], BookingDate,
-MON,Status,StatusId,Product_updated,product_name,bt,Qtr_Locking_Date,Health_bt,policy_booked_flag,policy_issued_flag,policy_verified_flag,special_deal_flag,Accrual_Net_Pr, Accrual_Net_Ins,
+MON,Status,StatusId,Product_updated,product_name,bt,
+PolicyStartDate,PolicyEndDate, Policy_Tenure,
+--Qtr_Locking_Date,
+Health_bt,policy_booked_flag,policy_issued_flag,policy_verified_flag,special_deal_flag,Accrual_Net_Pr, Accrual_Net_Ins,
 (Accrual_Net_Ins * special_deal_flag) as Accrual_Net_Booked,
 (Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag) as Accrual_Net,
 (Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag * compliance_flag) as Accrual_Net_C,
 (Accrual_Net_Ins * special_deal_flag)*4 as W_Net_Booked,
-(Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag)*4 as W_Net,
+cast((Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag)*4 as decimal(18,2)) as W_Net,
 (Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag * compliance_flag)*4 as W_Net_C
 from t5
 WHERE 1=1
