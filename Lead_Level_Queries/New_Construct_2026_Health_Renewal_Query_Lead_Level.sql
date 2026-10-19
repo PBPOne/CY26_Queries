@@ -1,10 +1,10 @@
 with dates as 
 			(select '2026-01-01' as min_date, 
-					'2026-10-01' as max_date),
+					'2027-01-01' as max_date),
 spl_deals as
 (
 	select 
-		[MatrixLeadId], product from [TestDB].[dbo].[tbl_ContestDB] t
+		[MatrixLeadId], product from [TestDB].[dbo].[tbl_ContestDB] (nolock) t
 	cross join dates d
 		where
 			t.IsActive =1
@@ -33,7 +33,15 @@ select
 	vw.Utm_term,vw.leadid,vw.TotalPremium,vw.APE,vw.[Net Premium],vw.ProductId,IsComplianceN,
 	vw.[Insurer Name],vw.BookingMode,vw.BookingDate,
 	DATEFROMPARTS(YEAR(vw2.Prev_end_date), MONTH(vw2.Prev_end_date), 1) as MON,
-	vw.BusinessType,vw.Status,vw.StatusId,cast(vw.PolicyStartDate as date) as PolicyStartDate,cast(vw2.Prev_end_date as date) as Prev_end_date,
+	vw.BusinessType,vw.Status,vw.StatusId,
+	cast(vw.PolicyStartDate as date) as PolicyStartDate,
+	cast(vw.PolicyEndDate as date) as PolicyEndDate,
+
+	case when vw2.Prev_end_date >= '2026-10-01' 
+	then DATEDIFF(year,vw.PolicyStartDate,dateadd(day,1,vw.PolicyEndDate)) 
+	else 1
+	end as Policy_Tenure,
+	cast(vw2.Prev_end_date as date) as Prev_end_date,
 	vw.ProductId as Product_updated,
 	'Health' as product_name,
 	'Health_Renewal' as bt,
@@ -109,7 +117,7 @@ from all_bookings vw
 	left join all_bookings_2 sumis on vw.leadid = sumis.LEADID and vw.ProductId = sumis.ProductID
 	left join Health_Verification_cte hv on vw.leadid = hv.LeadId
 	left join spl_deals sd on vw.leadid = sd.MatrixLeadId and vw.product_name= sd.product
-	where StatusId in (41, 42, 43, 44)
+	--where StatusId in (41, 42, 43, 44)
 ),
 t2 as
 (
@@ -121,7 +129,8 @@ inner join p1 on t1.Utm_term = p1.PartnerCode
 ),
 t3 as
 (
-select  t2.*, APE as netpr,
+select  t2.*, 
+cast(case when Policy_Tenure > 1 then round(APE/Policy_Tenure,2) else APE end as decimal(18,2)) as netpr,
 --1 as policy_booked_flag,
 case when StatusId in (41,42,44) then 1 else 0 end as policy_issued_flag,
 --1 as policy_verified_flag,
@@ -146,7 +155,9 @@ from t3
 )
 select --top 5 
 PartnerCode,SellNowEnabled,ComplianceCertified,Markettype,IsComplianceN,compliance_flag,leadid,TotalPremium,APE,netpr,SumInsured,[Insurer Name], BookingDate,
-MON,Status,StatusId,Product_updated,product_name,bt,Qtr_Locking_Date,Prev_end_date,Health_bt,policy_issued_flag,special_deal_flag, Accrual_Net_Ins,
+MON,Status,StatusId,Product_updated,product_name,bt,
+--Qtr_Locking_Date,
+PolicyStartDate,PolicyEndDate, Policy_Tenure,Prev_end_date,Health_bt,policy_issued_flag,special_deal_flag, Accrual_Net_Ins,
 (Accrual_Net_Ins * special_deal_flag) as Accrual_Net_Booked,
 (Accrual_Net_Ins * policy_issued_flag * special_deal_flag) as Accrual_Net,
 (Accrual_Net_Ins * policy_issued_flag * special_deal_flag * compliance_flag) as Accrual_Net_C,
