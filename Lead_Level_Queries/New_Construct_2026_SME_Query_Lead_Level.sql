@@ -102,8 +102,9 @@ from t2
 t4 as
 (
 select *,
-case when PlanName like '%Group Gratuity Plan%' then netpr*.1
-	 when PlanName like '%Group%' then netpr*.25
+case when PlanName in ('Group Gratuity Plan') then netpr *.1
+	 --when PlanName like '%Group% then netpr*.25
+	 when PlanName in ('Group Health Insurance', 'Group Personal Accident', 'Group Term Life') then netpr *.25
 else 
 	(case when BookingDate >= '2026-10-01' then netpr *0.75 else netpr *1.25 end)
 end as 'Accrual_Net_Pr'
