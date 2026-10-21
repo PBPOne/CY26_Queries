@@ -163,7 +163,7 @@ case when Product_updated in (188) and BookingMode in ('Online') and Motor_bt in
 	 when Product_updated in (187) and ODTerm =0 and TPTerm >0 and BookingMode in ('Online') and Motor_bt in ('New','Renewal') then netpr
 	 when Product_updated in (187) and ODTerm =0 and TPTerm >0 and BookingMode in ('Offline') and Motor_bt in ('New','Renewal') then netpr*0
 
-else netpr
+else 0
 	 end as 'Accrual_Net_Pr'
 	
 from t3
