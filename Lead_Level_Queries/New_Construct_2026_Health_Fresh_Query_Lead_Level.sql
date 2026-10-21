@@ -156,7 +156,7 @@ t4 as
 (
 select *,
 case 
-	 when Product_updated in (189) and PlanType = 7 then 0
+	 --when Product_updated in (189) and PlanType = 7 then 0
 
 	 when Product_updated in (3,118,130,189,147,224) then 
 		  case when BookingDate >= '2026-10-01' then netpr else netpr *1.25 end
