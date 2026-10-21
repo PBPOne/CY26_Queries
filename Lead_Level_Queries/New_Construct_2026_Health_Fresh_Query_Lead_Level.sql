@@ -14,9 +14,10 @@ spl_deals as
 all_bookings_2 as --sumis
 (
 select 
-	LEADID, SumInsured,ProductID 
+	LEADID, SumInsured,ProductID,PlanType 
 from [PospDB].[dbo].BookingDetails_v1 (nolock)
-		where ProductID in (3,106,118,130,138,144,189,190,147,224)
+		where ProductID in (3,106,118,130,138,144,190,147,224, 189)
+			  --or (ProductID =189 and PlanType <> 7)   --CPA Removed
 ),
 
 Health_Verification_cte as --pt
@@ -106,10 +107,10 @@ p1 as (
 t1 as
 (
 select vw.*, 
-		sumis.SumInsured, hv.VerificationStatus,sd.MatrixLeadId
+		sumis.SumInsured, hv.VerificationStatus,sd.MatrixLeadId,sumis.PlanType
 from all_bookings vw
    
-	left join all_bookings_2 sumis on vw.leadid = sumis.LEADID and vw.ProductId = sumis.ProductID
+	inner join all_bookings_2 sumis on vw.leadid = sumis.LEADID and vw.ProductId = sumis.ProductID
 	left join Health_Verification_cte hv on vw.leadid = hv.LeadId
 	left join spl_deals sd on vw.leadid = sd.MatrixLeadId and vw.product_name= sd.product
 	--where StatusId in (13, 39, 41, 42, 43, 44, 77)
@@ -154,11 +155,19 @@ from t2
 t4 as
 (
 select *,
-case when Product_updated in (3,118,130,189,147,224) and BookingDate >= '2026-10-01' then netpr
-	 when Product_updated in (3,118,130,189,147,224) then netpr *1.25
+case 
+	 when Product_updated in (189) and PlanType = 7 then 0
 
-	 when Product_updated in (190) and Health_bt in ('New') and SumInsured >= 1000000 and BookingDate >= '2026-10-01' then netpr *1.25
-	 when Product_updated in (190) and Health_bt in ('New') and SumInsured >= 1000000 then netpr
+	 when Product_updated in (3,118,130,189,147,224) then 
+		  case when BookingDate >= '2026-10-01' then netpr else netpr *1.25 end
+	 
+
+	 --when Product_updated in (3,118,130,189,147,224) then netpr *1.25
+
+	 when Product_updated in (190) and Health_bt in ('New') and SumInsured >= 1000000 then
+		  case when BookingDate >= '2026-10-01' then netpr else netpr *1.25 end
+
+	 --when Product_updated in (190) and Health_bt in ('New') and SumInsured >= 1000000 then netpr *1.25
 
 	 when Product_updated in (190) and Health_bt in ('New') and SumInsured >= 500000 and SumInsured < 1000000 then netpr*.75
 	 when Product_updated in (190) and SumInsured < 500000  then netpr*0
@@ -187,6 +196,7 @@ PartnerCode,SellNowEnabled,ComplianceCertified,Markettype,IsComplianceN,complian
 MON,Status,StatusId,Product_updated,product_name,bt,
 PolicyStartDate,PolicyEndDate, Policy_Tenure,
 --Qtr_Locking_Date,
+PlanType,
 Health_bt,policy_booked_flag,policy_issued_flag,policy_verified_flag,special_deal_flag,Accrual_Net_Pr, Accrual_Net_Ins,
 (Accrual_Net_Ins * special_deal_flag) as Accrual_Net_Booked,
 (Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag) as Accrual_Net,
