@@ -16,8 +16,8 @@ all_bookings_2 as --sumis
 select 
 	LEADID, SumInsured,ProductID,PlanType 
 from [PospDB].[dbo].BookingDetails_v1 (nolock)
-		where ProductID in (3,106,118,130,138,144,190,147,224, 189)
-			  --or (ProductID =189 and PlanType <> 7)   --CPA Removed
+		where ProductID in (3,106,118,130,138,144,190,147,224)
+			  or (ProductID =189 and PlanType <> 7)   --CPA Removed
 ),
 
 Health_Verification_cte as --pt
