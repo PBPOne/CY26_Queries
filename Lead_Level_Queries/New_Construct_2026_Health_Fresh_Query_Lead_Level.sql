@@ -196,7 +196,7 @@ PartnerCode,SellNowEnabled,ComplianceCertified,Markettype,IsComplianceN,complian
 MON,Status,StatusId,Product_updated,product_name,bt,
 PolicyStartDate,PolicyEndDate, Policy_Tenure,
 --Qtr_Locking_Date,
-PlanType,
+PlanType as PA_PlanType,
 Health_bt,policy_booked_flag,policy_issued_flag,policy_verified_flag,special_deal_flag,Accrual_Net_Pr, Accrual_Net_Ins,
 (Accrual_Net_Ins * special_deal_flag) as Accrual_Net_Booked,
 (Accrual_Net_Ins * policy_issued_flag * policy_verified_flag * special_deal_flag) as Accrual_Net,
