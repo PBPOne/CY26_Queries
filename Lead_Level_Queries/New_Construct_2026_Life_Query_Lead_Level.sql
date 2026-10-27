@@ -148,7 +148,7 @@ select *,
 
 --Life
 case when  PaymentPeriodicity in ('Single','Single pay','Single Premium')  then 0
-	 when  PayoutProdCat = 'ULIP' then 0
+	 when  PayoutProdCat in ('ULIP','USD') then 0
 	 when PayTerm in (2,3,4) then netpr*.5
 else netpr
 	 end as 'Accrual_Net_Pr'
