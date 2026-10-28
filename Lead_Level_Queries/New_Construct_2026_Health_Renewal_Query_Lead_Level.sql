@@ -132,7 +132,7 @@ t3 as
 select  t2.*, 
 cast(case when Policy_Tenure > 1 then round(APE/Policy_Tenure,2) else APE end as decimal(18,2)) as netpr,
 --1 as policy_booked_flag,
-case when StatusId in (41,42,44) then 1 else 0 end as policy_issued_flag,
+case when StatusId in (41,42,44) and Prev_end_date <= getdate() then 1 else 0 end as policy_issued_flag,
 --1 as policy_verified_flag,
 
 case when MatrixLeadId is null then 1 else 0 end as special_deal_flag,---0 means special deal
