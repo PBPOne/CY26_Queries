@@ -15,7 +15,7 @@ all_bookings_1 as --bp
 (
 select LEADID, PlanId, SupplierId, ProductID, BasicPremium,PaymentPeriodicity,cast(issuanceDate as date) as issuanceDate--SupplierName,
 from [PospDB].[dbo].BookingDetails_v1 b1 (nolock)
-where ProductId in (7,115,200)
+where ProductId in (7,115,200,223)
 ),
 
 life_plans as --pl
@@ -52,7 +52,7 @@ from [PospDB].[dbo].vwAllBookingDetails vw (nolock)
 	where
 		vw.BookingDate >= d.min_date
 		and vw.BookingDate < d.max_date
-		and vw.ProductId in (7,115,200) 
+		and vw.ProductId in (7,115,200,223) 
 		--and vw.Status in ('Booked','Policy Issued', 'Sale Complete','Soft Copy Received') 
 ),
 --All Partners Base
