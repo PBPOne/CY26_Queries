@@ -1,4 +1,4 @@
-select top 100
+select --top 100
 PartnerCode,
 CalendarYear as Year,
 case 
