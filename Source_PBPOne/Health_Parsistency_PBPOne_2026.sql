@@ -35,7 +35,7 @@ case when Qtr_Health_Persistency >= .9 then
 	 end as Qtr_Health_Persistency_Multiplier,
 
 case 
-	 when Annual_Renewal_due < 5 then 1
+	 when Yearly_Renewal_Due < 5 then 1
 	 when Annual_Health_Persistency >= .9 then
 		  case when Quarter = 'Q4-OND' then .40 else .75 end
 	 when Annual_Health_Persistency >= .8 then
