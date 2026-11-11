@@ -16,18 +16,18 @@ Health_WNet as Health_W_Net_2,
 Life_WNet as Life_W_Net,
 SME_WNet as SME_W_Net,
 NoOfMonth as Active_Months,
-Tier,
-AddonCoins as Adonncoins_on_WNet
+Tier as Club,
+AddonCoins,
+Motor_AddonCoins,
+Health_AddonCoins,
+Life_AddonCoins,
+SME_AddonCoins
+--AddonCoins as Adonncoins_on_WNet
 --Motor_AddonCoins as Motor_PBP_Coins,
 --Health_AddonCoins as Health_PBP_Coins,
 --Life_AddonCoins as Life_PBP_Coins,
 --SME_AddonCoins as SME_PBP_Coins
-
-	
-
-
 from PBPOneDB.dbo.PartnerQuarterlyCalculationop nolock
 where CalendarYear =2026
 and IsActive =1
-
---and PartnerCode = 'IP100768'
+and Quarter in ('Q3','Q4')
