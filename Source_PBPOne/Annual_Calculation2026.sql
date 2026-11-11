@@ -1,5 +1,6 @@
 select 
 PartnerCode,
+CalendarYear as Year,
 WeightedNet as W_Net_2,
 Motor_WNet as Motor_W_Net_1,
 Health_WNet as Life_NWP,
