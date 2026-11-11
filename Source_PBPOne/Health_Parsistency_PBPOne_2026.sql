@@ -10,7 +10,7 @@ case
 	 when Quarter = 'Q4' then 'Q4-OND'
 END as Quarter,
 Qtr_Renewal_Due, Qtr_Renewal_Done,
-Annual_Renewal_Due, Annual_Renewal_Done,
+Annual_Renewal_Due as Yearly_Renewal_Due, Annual_Renewal_Done as Yearly_Renewal_Done,
 case when Qtr_Health_Persistency >1 then Qtr_Renewal_Done/Qtr_Renewal_Due else Qtr_Health_Persistency end as Qtr_Health_Persistency, 
 case when Annual_Health_Persistency >1 then Annual_Renewal_Done/Annual_Renewal_Due else  Annual_Health_Persistency end as Annual_Health_Persistency,
 CreatedOn, UpdatedOn
